@@ -22,11 +22,6 @@
                 <span class="logo-pixel">⛏️</span>
                 <h1 class="pixel-text">PARIAH'S MINESHAFT</h1>
             </div>
-
-            <!-- Digital Clock -->
-            <div class="header-clock text-red pixel-text" id="live-clock">
-                2026-07-18 12:00:00
-            </div>
             
             <div class="header-status">
                 <!-- Gems balance -->
@@ -47,58 +42,61 @@
         <!-- MAIN SPA VIEWPORT -->
         <main class="app-main">
             
-            <!-- VIEW 1: HOME/WELCOME (Full screen background, no scroll) -->
+            <!-- VIEW 1: HOME/WELCOME (Scenic display, no scroll, tucked widgets) -->
             <section id="view-home" class="view-section active">
                 <div class="home-panel">
-                    <div class="welcome-hero">
-                        <div class="meinschaft-container">
-                            <!-- Herr Meinschaft SVG -->
-                            <svg class="herr-meinschaft" viewBox="0 0 20 23" width="120" height="138">
-                                <rect x="6" y="1" width="8" height="5" fill="#111" />
-                                <rect x="4" y="5" width="12" height="1" fill="#111" />
-                                <rect x="6" y="4" width="8" height="1" fill="#800000" />
-                                <rect x="6" y="6" width="8" height="6" fill="#FCD1A1" />
-                                <rect x="8" y="8" width="1" height="1" fill="#111" />
-                                <rect x="11" y="7" width="3" height="3" fill="#FFD700" />
-                                <rect x="12" y="8" width="1" height="1" fill="#80e0ff" />
-                                <rect x="14" y="9" width="2" height="1" fill="#FFD700" />
-                                <rect x="15" y="10" width="1" height="3" fill="#FFD700" />
-                                <rect x="7" y="10" width="6" height="1" fill="#4A2511" />
-                                <rect x="9" y="11" width="2" height="1" fill="#111" />
-                                <rect x="5" y="12" width="10" height="8" fill="#111" />
-                                <rect x="9" y="12" width="2" height="3" fill="#FFF" />
-                                <rect x="9.5" y="13" width="1" height="2" fill="#800000" />
-                                <rect x="3" y="13" width="2" height="5" fill="#111" />
-                                <rect x="15" y="13" width="2" height="5" fill="#111" />
-                                <rect x="3" y="18" width="2" height="1" fill="#FCD1A1" />
-                                <rect x="15" y="18" width="2" height="1" fill="#FCD1A1" />
-                                <rect x="16" y="14" width="1" height="8" fill="#8B4513" />
-                                <rect x="15" y="14" width="2" height="1" fill="#8B4513" />
-                                <rect x="6" y="20" width="3" height="2" fill="#222" />
-                                <rect x="11" y="20" width="3" height="2" fill="#222" />
-                                <rect x="5" y="22" width="3" height="1" fill="#000" />
-                                <rect x="12" y="22" width="3" height="1" fill="#000" />
-                            </svg>
-                            <div class="bubble-chat">
-                                <div class="pixel-bubble-text text-red" id="meinschaft-speech">
-                                    "Ah, another shift in the mindshaft, Herr Pariah. Let's sharpen the mental pickaxe. Pick a shaft or start the daily challenge!"
-                                </div>
-                            </div>
+                    <!-- Tucked Character (Top Left) -->
+                    <div class="home-tucked-hero">
+                        <svg class="herr-meinschaft-tucked" viewBox="0 0 20 23" width="50" height="57">
+                            <rect x="6" y="1" width="8" height="5" fill="#111" />
+                            <rect x="4" y="5" width="12" height="1" fill="#111" />
+                            <rect x="6" y="4" width="8" height="1" fill="#800000" />
+                            <rect x="6" y="6" width="8" height="6" fill="#FCD1A1" />
+                            <rect x="8" y="8" width="1" height="1" fill="#111" />
+                            <rect x="11" y="7" width="3" height="3" fill="#FFD700" />
+                            <rect x="12" y="8" width="1" height="1" fill="#80e0ff" />
+                            <rect x="14" y="9" width="2" height="1" fill="#FFD700" />
+                            <rect x="15" y="10" width="1" height="3" fill="#FFD700" />
+                            <rect x="7" y="10" width="6" height="1" fill="#4A2511" />
+                            <rect x="9" y="11" width="2" height="1" fill="#111" />
+                            <rect x="5" y="12" width="10" height="8" fill="#111" />
+                            <rect x="9" y="12" width="2" height="3" fill="#FFF" />
+                            <rect x="9.5" y="13" width="1" height="2" fill="#800000" />
+                            <rect x="3" y="13" width="2" height="5" fill="#111" />
+                            <rect x="15" y="13" width="2" height="5" fill="#111" />
+                            <rect x="3" y="18" width="2" height="1" fill="#FCD1A1" />
+                            <rect x="15" y="18" width="2" height="1" fill="#FCD1A1" />
+                            <rect x="16" y="14" width="1" height="8" fill="#8B4513" />
+                            <rect x="15" y="14" width="2" height="1" fill="#8B4513" />
+                            <rect x="6" y="20" width="3" height="2" fill="#222" />
+                            <rect x="11" y="20" width="3" height="2" fill="#222" />
+                            <rect x="5" y="22" width="3" height="1" fill="#000" />
+                            <rect x="12" y="22" width="3" height="1" fill="#000" />
+                        </svg>
+                        <div class="bubble-chat-tucked">
+                            <span class="pixel-bubble-text text-red" id="meinschaft-speech">
+                                "Extract gems, Pariah."
+                            </span>
                         </div>
                     </div>
 
-                    <!-- Centered Vertical Navigation Menu -->
-                    <div class="home-menu">
-                        <button class="pixel-btn-lg red-glow" onclick="app.loadDailyPuzzle()">
-                            <span class="pixel-text font-md">⚡ DAILY CHALLENGE</span>
+                    <!-- Tucked Digital Clock (Bottom Left) -->
+                    <div class="live-clock-home text-red pixel-text" id="live-clock">
+                        2026-07-18 12:00:00
+                    </div>
+
+                    <!-- Horizontal Menu (Bottom Center) -->
+                    <div class="home-menu-horizontal">
+                        <button class="pixel-btn-sm red-glow" onclick="app.loadDailyPuzzle()">
+                            <span class="pixel-text font-xs">⚡ DAILY MINE</span>
                             <span id="daily-solved-badge" class="badge badge-unsolved">UNSOLVED</span>
                         </button>
-                        <button class="pixel-btn-lg red-glow" onclick="app.loadWeeklyPuzzle()">
-                            <span class="pixel-text font-md">📅 WEEKLY EXPEDITION</span>
+                        <button class="pixel-btn-sm red-glow" onclick="app.loadWeeklyPuzzle()">
+                            <span class="pixel-text font-xs">📅 WEEKLY EXPEDITION</span>
                             <span id="weekly-solved-badge" class="badge badge-unsolved">UNSOLVED</span>
                         </button>
-                        <button class="pixel-btn-lg red-glow" onclick="app.toggleShaftsModal(true)">
-                            <span class="pixel-text font-md">⛏️ ENTER MINESHAFTS</span>
+                        <button class="pixel-btn-sm red-glow" onclick="app.toggleShaftsModal(true)">
+                            <span class="pixel-text font-xs">⛏️ SELECT MINESHAFT</span>
                         </button>
                     </div>
                 </div>
@@ -160,7 +158,7 @@
 
                 <div class="dig-deeper-box border-dashed border-red">
                     <h4 class="pixel-text font-sm text-red mb-05">RUN OUT OF ORE?</h4>
-                    <p class="font-sm mb-1 text-muted">Generate a brand new puzzle in this class using OpenAI. Costs no gems, but takes a few seconds to extract.</p>
+                    <p class="font-sm mb-1 text-muted">Dig deeper</p>
                     <button id="btn-dig-deeper" class="pixel-btn red-glow" onclick="app.generateNewQuestion()">⛏️ DIG DEEPER (NEW PUZZLE)</button>
                 </div>
             </section>
@@ -203,6 +201,8 @@
                                     <button id="btn-submit-answer" class="pixel-btn red-glow" onclick="app.submitAnswer()">SUBMIT ANSWER</button>
                                 </div>
                                 <div id="solve-attempts" class="attempts-info text-red font-xs mt-05">Attempts: 0 / 9</div>
+                                <!-- Reset collapsed attempts button -->
+                                <button id="btn-reset-collapsed" class="pixel-btn-sm red-glow mt-05 hidden" onclick="app.resetCollapsedSite()">🔋 SHIELD COLLAPSE (💎 5 GEMS)</button>
                             </div>
 
                             <!-- Solved Section -->

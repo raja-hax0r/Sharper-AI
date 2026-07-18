@@ -100,12 +100,6 @@ body {
     font-size: 1.8rem;
 }
 
-.header-clock {
-    font-size: 1.5rem;
-    color: var(--ruby-red);
-    text-shadow: 0 0 4px var(--neon-ruby-glow);
-}
-
 .header-status {
     display: flex;
     align-items: center;
@@ -143,17 +137,20 @@ body {
 .pixel-btn {
     padding: 0.6rem 1.2rem;
     font-size: 1.3rem;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
 }
 
 .pixel-btn-sm {
     padding: 0.3rem 0.8rem;
     font-size: 1.1rem;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .pixel-btn-lg {
-    padding: 0.8rem 1.8rem;
-    font-size: 1.5rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 1.4rem;
     width: 100%;
+    box-shadow: 3px 3px 6px rgba(0,0,0,0.5);
 }
 
 .pixel-btn-icon {
@@ -163,6 +160,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .pixel-btn:hover, .pixel-btn-sm:hover, .pixel-btn-lg:hover, .pixel-btn-icon:hover {
@@ -189,7 +187,7 @@ body {
     flex: 1;
     padding: 1.2rem 0;
     position: relative;
-    overflow-y: auto; /* Views scroll inside main */
+    overflow-y: auto;
 }
 
 /* SPA VIEWS */
@@ -213,44 +211,43 @@ body {
     }
 }
 
-/* VIEW 1: HOME SCREEN (Scroll-free, full screen) */
+/* VIEW 1: HOME SCREEN (Scroll-free, full screen layout) */
 #view-home {
     height: 100%;
 }
 
 .home-panel {
-    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('/static/bg.jpg');
+    background-image: url('/static/bg.jpg'); /* Clear background image */
     background-size: cover;
     background-position: center;
     border: 4px solid var(--border-color);
     border-radius: 8px;
-    padding: 2.5rem;
     height: calc(100vh - 100px); /* Fill screen minus header */
     max-height: 620px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    width: 100%;
+    position: relative; /* Essential for absolute tuck layers */
     box-shadow: 0 0 25px rgba(128, 0, 16, 0.35);
 }
 
-.welcome-hero {
-    margin-bottom: 2rem;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-.meinschaft-container {
+/* Tucked-Away Character (Top Left) */
+.home-tucked-hero {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
     display: flex;
     align-items: center;
-    gap: 2rem;
-    max-width: 750px;
-    width: 100%;
+    gap: 0.8rem;
+    background-color: rgba(13, 10, 10, 0.85); /* Solid container buffer */
+    border: 2px solid var(--border-color);
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+    z-index: 10;
+    max-width: 320px;
 }
 
-.herr-meinschaft {
-    filter: drop-shadow(0 0 6px var(--neon-ruby-glow));
+.herr-meinschaft-tucked {
+    filter: drop-shadow(0 0 4px var(--neon-ruby-glow));
     image-rendering: pixelated;
     flex-shrink: 0;
     animation: bobble 3s ease-in-out infinite;
@@ -258,51 +255,65 @@ body {
 
 @keyframes bobble {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
+    50% { transform: translateY(-4px); }
 }
 
-.bubble-chat {
-    position: relative;
-    background-color: var(--card-bg);
-    border: 3px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1rem;
-    flex: 1;
-    box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+.bubble-chat-tucked {
+    background-color: #160c0e; /* Soft dark maroon buffer */
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
-.bubble-chat::after {
-    content: '';
+.bubble-chat-tucked .pixel-bubble-text {
+    font-size: 0.85rem;
+    color: #ffccd5; /* High readability soft rose */
+}
+
+/* Tucked Clock (Bottom Left) */
+.live-clock-home {
     position: absolute;
-    left: -12px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-width: 6px 12px 6px 0;
-    border-style: solid;
-    border-color: transparent var(--border-color) transparent transparent;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 10;
+    font-size: 1.3rem;
+    color: var(--ruby-red);
+    background-color: rgba(13, 10, 10, 0.85); /* Solid container buffer */
+    border: 2px solid var(--border-color);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
 }
 
-.pixel-bubble-text {
-    font-size: 0.95rem;
-    line-height: 1.4;
-}
-
-/* Balatro-style Vertical Navigation Stack */
-.home-menu {
+/* Horizontal Menu at Bottom Center */
+.home-menu-horizontal {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-    width: 100%;
-    max-width: 450px;
+    gap: 1rem;
+    z-index: 10;
+    background-color: rgba(13, 10, 10, 0.85); /* Solid container buffer */
+    border: 2px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+}
+
+.home-menu-horizontal button {
+    white-space: nowrap;
+    width: auto;
 }
 
 .badge {
     display: inline-block;
-    padding: 0.15rem 0.5rem;
+    padding: 0.15rem 0.4rem;
     border-radius: 3px;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-family: var(--font-pixel);
-    margin-left: 0.8rem;
+    margin-left: 0.5rem;
 }
 
 .badge-solved {
@@ -315,7 +326,7 @@ body {
     color: #fff;
 }
 
-/* NESTED MODALS (Mineshaft difficulty list) */
+/* NESTED MODAL TIER SELECTOR */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -379,28 +390,6 @@ body {
     font-size: 1.3rem;
 }
 
-/* TIER OUTLINES */
-.card-coal { border-left: 6px solid #555555 !important; }
-.card-iron { border-left: 6px solid #8c9096 !important; }
-.card-gold { border-left: 6px solid var(--gold-color) !important; }
-.card-ruby { border-left: 6px solid var(--ruby-red) !important; }
-.card-diamond { border-left: 6px solid #00d2ff !important; }
-
-/* SECTION NAVIGATION */
-.section-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--border-color);
-    padding-bottom: 0.8rem;
-}
-
-.solve-header-timer {
-    display: flex;
-    align-items: center;
-}
-
 /* SHAFT QUESTION BANK VIEW */
 .shaft-intro-card {
     background-color: var(--card-bg-light);
@@ -459,6 +448,21 @@ body {
     text-align: center;
 }
 
+/* SECTION NAVIGATION */
+.section-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.8rem;
+}
+
+.solve-header-timer {
+    display: flex;
+    align-items: center;
+}
+
 /* SOLVE WORKSPACE (2 Columns desktop, full width) */
 .solve-workspace-full {
     display: grid;
@@ -495,25 +499,33 @@ body {
     line-height: 1.6;
 }
 
-/* DATA VISUALIZATION (Huge container) */
+/* DATA VISUALIZATION (NORMAL STYLING - WHITE CANVAS!) */
 .visual-card {
-    background-color: #000;
-    border: 3px solid var(--border-color);
-    border-radius: 4px;
+    background-color: #ffffff; /* White background! */
+    border: 3px solid #dddddd; /* Soft clean border */
+    border-radius: 6px;
     padding: 1.2rem;
     margin-bottom: 1.2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .visual-header {
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #e0e0e0;
     padding-bottom: 0.5rem;
     margin-bottom: 1rem;
+    color: #222222 !important; /* Dark legible text */
+}
+
+.visual-header span {
+    color: #111111 !important;
 }
 
 .chart-container-large {
     position: relative;
     width: 100%;
     height: 380px; /* Big graph */
+    background-color: #ffffff;
+    padding: 0.5rem;
 }
 
 /* PERSISTENT SCRATCHPAD CARD */
@@ -522,6 +534,7 @@ body {
     border: 3px solid var(--border-color);
     border-radius: 4px;
     padding: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
 .scratchpad-header {
@@ -541,7 +554,7 @@ body {
     color: var(--text-primary);
     padding: 0.8rem;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     resize: none;
     outline: none;
     border-radius: 4px;
@@ -551,13 +564,14 @@ body {
     border-color: var(--ruby-red);
 }
 
-/* SUBMISSION ACTION CARD */
+/* SUBMISSION ACTION CARD & ATTEMPTS indicator */
 .puzzle-action-card {
     background-color: var(--card-bg);
     border: 3px solid var(--border-color);
     border-radius: 4px;
     padding: 1.2rem;
     margin-bottom: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
 .mc-choices-grid {
@@ -588,6 +602,18 @@ body {
     border-color: var(--ruby-red);
 }
 
+.attempts-info {
+    display: inline-block;
+    background-color: #1d0709; /* Solid container buffer */
+    border: 1px solid var(--border-color);
+    color: #ffccd5;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-family: var(--font-retro);
+    font-size: 1.25rem !important;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+}
+
 .solved-success-card {
     border-radius: 4px;
 }
@@ -611,6 +637,7 @@ body {
     border: 2px solid var(--border-color);
     border-radius: 4px;
     padding: 1rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
 .hints-list {
@@ -635,11 +662,11 @@ body {
     flex-direction: column;
     align-items: flex-end;
     gap: 0.5rem;
-    pointer-events: none; /* Let clicks pass through outside button/panel */
+    pointer-events: none;
 }
 
 .drillin-float-container * {
-    pointer-events: auto; /* Re-enable clicks for actual widgets */
+    pointer-events: auto;
 }
 
 .drillin-toggle-btn {
@@ -698,7 +725,7 @@ body {
     overflow-y: auto;
     padding: 0.8rem;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     line-height: 1.4;
     display: flex;
     flex-direction: column;
@@ -713,29 +740,38 @@ body {
 }
 
 .system-msg {
-    color: var(--maroon-red);
-    border-left: 2px solid var(--maroon-red);
-    padding-left: 0.5rem;
+    color: #ffccd5;
+    background-color: #1d0709;
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
 }
 
 .user-chat-bubble {
     align-self: flex-end;
-    background-color: #240407;
-    border: 1px solid var(--border-color);
-    color: #ff8c94;
-    padding: 0.5rem;
-    border-radius: 4px;
+    background-color: #111115; /* Slate dark background */
+    border: 1px solid #33333f;
+    color: #ffffff; /* Clean white readable user messages */
+    padding: 0.8rem;
+    border-radius: 6px;
     max-width: 85%;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
 }
 
 .drillin-chat-bubble {
     align-self: flex-start;
-    background-color: #000;
-    border: 1px dashed var(--border-color);
-    color: #ff2a4b;
-    padding: 0.5rem;
-    border-radius: 4px;
+    background-color: #1a080a; /* Dark maroon background buffer */
+    border: 1px solid var(--border-color);
+    color: #ffb3ba; /* High readability soft rose color */
+    padding: 0.8rem;
+    border-radius: 6px;
     max-width: 85%;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
 }
 
 .console-input-area {
@@ -753,7 +789,7 @@ body {
     color: var(--neon-ruby);
     padding: 0.4rem;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     outline: none;
 }
 
@@ -781,6 +817,7 @@ body {
     border: 3px double var(--border-color);
     padding: 1.5rem;
     border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
 .scorecard-grid {
@@ -816,6 +853,7 @@ body {
     border: 3px solid var(--border-color);
     border-radius: 4px;
     padding: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
 .archive-item-header {
@@ -877,7 +915,7 @@ body {
 /* RESPONSIVE DESIGN */
 @media (max-width: 950px) {
     body {
-        overflow-y: auto; /* Allow scrolls on mobile generally */
+        overflow-y: auto;
     }
     .solve-workspace-full {
         grid-template-columns: 1fr;
@@ -899,17 +937,30 @@ body {
     }
     .home-panel {
         height: auto;
-        min-height: 500px;
+        min-height: 520px;
     }
-    .meinschaft-container {
+    .home-tucked-hero {
+        position: relative;
+        top: 0.5rem;
+        left: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .live-clock-home {
+        position: relative;
+        bottom: 0.5rem;
+        left: 0.5rem;
+        margin-top: 1rem;
+        display: inline-block;
+        width: auto;
+    }
+    .home-menu-horizontal {
+        position: relative;
+        bottom: 0.5rem;
+        left: 0;
+        transform: none;
         flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-    }
-    .bubble-chat::after {
-        left: 50%;
-        top: -12px;
-        transform: translateX(-50%) rotate(90deg);
+        gap: 0.8rem;
+        width: 100%;
     }
     .chart-container-large {
         height: 250px;

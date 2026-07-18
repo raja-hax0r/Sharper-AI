@@ -49,6 +49,7 @@ const el = {
     userAnswerInput: document.getElementById('user-answer-input'),
     btnSubmitAnswer: document.getElementById('btn-submit-answer'),
     solveAttempts: document.getElementById('solve-attempts'),
+    btnResetCollapsed: document.getElementById('btn-reset-collapsed'),
     solveUnsolvedSection: document.getElementById('solve-unsolved-section'),
     solveSolvedSection: document.getElementById('solve-solved-section'),
     solveGemsRewarded: document.getElementById('solve-gems-rewarded'),
@@ -229,7 +230,7 @@ const app = {
             el.drillinFloatPanel.classList.toggle('hidden');
         }
         
-        // Scroll chat log to bottom if revealed
+        // Scroll chat log if revealed
         if (!el.drillinFloatPanel.classList.contains('hidden')) {
             el.drillinChatLog.scrollTop = el.drillinChatLog.scrollHeight;
         }
@@ -393,6 +394,7 @@ const app = {
         el.btnSubmitAnswer.disabled = false;
         el.btnSubmitAnswer.innerText = "SUBMIT ANSWER";
         el.userAnswerInput.disabled = false;
+        el.btnResetCollapsed.classList.add('hidden');
         
         el.solveUnsolvedSection.classList.remove('hidden');
         el.solveSolvedSection.classList.add('hidden');
@@ -484,67 +486,67 @@ const app = {
         try {
             const config = typeof chartDataStr === 'string' ? JSON.parse(chartDataStr) : chartDataStr;
             
-            // Overriding chart configuration for high legibility and color contrast!
-            const distinctBorders = ['#ff2a4b', '#ffd700', '#00e5ff', '#39ff14', '#e040fb', '#ff9100'];
+            // Overriding chart configuration for high legibility on white background!
+            const distinctColors = ['#007bff', '#28a745', '#fd7e14', '#6f42c1', '#dc3545', '#17a2b8'];
             const distinctBacks = [
-                'rgba(255, 42, 75, 0.3)', 
-                'rgba(255, 215, 0, 0.3)', 
-                'rgba(0, 229, 255, 0.3)', 
-                'rgba(57, 255, 20, 0.3)', 
-                'rgba(224, 64, 251, 0.3)', 
-                'rgba(255, 145, 0, 0.3)'
+                'rgba(0, 123, 255, 0.25)', 
+                'rgba(40, 167, 69, 0.25)', 
+                'rgba(253, 126, 20, 0.25)', 
+                'rgba(111, 66, 193, 0.25)', 
+                'rgba(220, 53, 69, 0.25)', 
+                'rgba(23, 162, 184, 0.25)'
             ];
 
             if (config.data && config.data.datasets) {
-                config.data.datasets.forEach(ds => {
-                    ds.borderWidth = 3;
+                config.data.datasets.forEach((ds, idx) => {
+                    ds.borderWidth = 3.5;
                     
                     if (config.type === 'pie' || config.type === 'doughnut') {
                         // Apply separate vibrant contrasting colors to each slice
-                        ds.borderColor = '#111111';
-                        ds.backgroundColor = distinctBorders.slice(0, ds.data.length);
+                        ds.borderColor = '#ffffff';
+                        ds.borderWidth = 2;
+                        ds.backgroundColor = distinctColors.slice(0, ds.data.length);
                     } else {
                         // Line/Bar charts
-                        ds.borderColor = ds.borderColor || '#ff2a4b';
-                        ds.backgroundColor = ds.backgroundColor || 'rgba(255, 42, 75, 0.15)';
+                        const colorIdx = idx % distinctColors.length;
+                        ds.borderColor = distinctColors[colorIdx];
+                        ds.backgroundColor = distinctBacks[colorIdx];
                     }
                 });
             }
             
-            // Adjust options for high contrast
+            // Adjust options for white canvas container styling
             if (!config.options) config.options = {};
-            
-            // Enable ticks styling
-            config.options.scales = config.options.scales || {};
             
             const fontConfig = {
                 family: 'VT323',
                 size: 16
             };
             
-            // Retain axis settings
+            // Configure Scales
             if (config.type !== 'pie' && config.type !== 'doughnut') {
+                config.options.scales = config.options.scales || {};
                 ['x', 'y'].forEach(axis => {
-                    if (!config.options.scales[axis]) config.options.scales[axis] = {};
+                    config.options.scales[axis] = config.options.scales[axis] || {};
                     config.options.scales[axis].ticks = config.options.scales[axis].ticks || {};
                     config.options.scales[axis].ticks.font = fontConfig;
-                    config.options.scales[axis].ticks.color = '#ffffff'; // White ticks
+                    config.options.scales[axis].ticks.color = '#333333'; // Dark ticks on white
                     config.options.scales[axis].grid = {
-                        color: '#4a040b' // Dark red grid
+                        color: '#e2e8f0' // Soft light gray grids on white
                     };
                 });
             }
             
-            // Chart titles/legends high visibility
+            // Chart legends/titles text readability
             if (!config.options.plugins) config.options.plugins = {};
             config.options.plugins.legend = config.options.plugins.legend || {};
             config.options.plugins.legend.labels = {
-                color: '#ffffff',
+                color: '#333333', // Dark charcoal text
                 font: { family: 'VT323', size: 16 }
             };
             
             config.options.plugins.title = config.options.plugins.title || {};
-            config.options.plugins.title.color = '#ff2a4b';
+            config.options.plugins.title.color = '#111111'; // Dark title on white
             config.options.plugins.title.font = { family: 'VT323', size: 20 };
 
             const ctx = el.puzzleChart.getContext('2d');
@@ -647,7 +649,7 @@ const app = {
                 
                 el.meinschaftSpeech.innerText = `"Elegantly extracted in ${timeFormatted}! Your logic pickaxe is lethal. Save your final scratchpad notes now!"`;
                 
-                // Save workspace notes to final database entry
+                // Save scratchpad notes
                 this.saveScratchpadDraft(true);
                 
                 if (state.activePuzzle.status_info.drillin_active === 1) {
@@ -657,7 +659,7 @@ const app = {
                 
                 this.loadStatus();
             } else {
-                // Screen shake animation
+                // Screen shake
                 const ws = document.querySelector('.solve-workspace-full');
                 ws.classList.add('shake-screen');
                 setTimeout(() => ws.classList.remove('shake-screen'), 300);
@@ -700,16 +702,44 @@ const app = {
         el.solveUnsolvedSection.classList.remove('hidden');
         el.solveSolvedSection.classList.add('hidden');
         
-        // Disable submission inputs
+        // Disable inputs
         el.btnSubmitAnswer.disabled = true;
         el.btnSubmitAnswer.innerText = "MINESHAFT COLLAPSED";
         el.userAnswerInput.disabled = true;
-        
-        // Hide multiple choices if present
         el.multipleChoiceContainer.classList.add('hidden');
         
         el.solveAttempts.innerHTML = `<span class="text-red">Attempts: ${q.status_info.attempts} / ${q.max_attempts} (COLLAPSED!)</span>`;
         el.meinschaftSpeech.innerText = `"Mineshaft collapsed! Max attempts reached. You must abandon this shift."`;
+        
+        // Show restore button (costs 5 gems)
+        el.btnResetCollapsed.classList.remove('hidden');
+    },
+
+    async resetCollapsedSite() {
+        if (state.gems < 5) {
+            alert("Not enough gems! Cost to restore collapsed mineshaft is 5 gems.");
+            return;
+        }
+        
+        try {
+            const res = await fetch(`/api/puzzle/${state.activePuzzle.id}/reset-attempts`, { method: 'POST' });
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Server error");
+            }
+            const data = await res.json();
+            
+            // Deduct gems
+            state.gems = data.gems;
+            el.headerGems.innerText = `💎 ${state.gems}`;
+            
+            alert("Mineshaft stabilized! Resetting attempts back to 0.");
+            
+            // Reload puzzle
+            this.loadPuzzle(state.activePuzzle.id);
+        } catch (err) {
+            alert("Error restoring mineshaft: " + err.message);
+        }
     },
 
     // WORKSPACE notes draft save
@@ -728,7 +758,6 @@ const app = {
                         el.scratchpadSavedBadge.classList.add('hidden');
                     }, 1500);
                 }
-                // Update active state notes
                 state.activePuzzle.status_info.user_notes = text;
             }
         } catch (err) {
@@ -744,7 +773,6 @@ const app = {
             el.drillinBuyBox.classList.add('hidden');
             el.drillinInputBox.classList.remove('hidden');
             
-            // Load messages
             this.loadDrillinMessages();
         } else {
             el.drillinStatusTag.innerText = "OFFLINE";
@@ -839,7 +867,6 @@ const app = {
             
             const reply = await res.json();
             
-            // Replace typing bubble
             typingBubble.innerHTML = `<strong>Drillin:</strong> ${reply.message}`;
             el.drillinChatLog.scrollTop = el.drillinChatLog.scrollHeight;
             
@@ -870,7 +897,6 @@ const app = {
             const res = await fetch('/api/archive');
             const data = await res.json();
             
-            // Aggregate scorecard data
             // Depth map for analytics: Coal=2m, Iron/Daily=5m, Gold=10m, Ruby/Weekly=15m, Diamond=25m
             let totalDepth = 0;
             const depthMap = {"shaft_1": 2, "shaft_2": 5, "daily": 5, "shaft_3": 10, "shaft_4": 15, "weekly": 15, "shaft_5": 25};

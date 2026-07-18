@@ -307,6 +307,41 @@ def reset_progress():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/puzzle/<int:puzzle_id>/reset-attempts', methods=['POST'])
+def reset_puzzle_attempts(puzzle_id):
+    try:
+        profile = db.get_user_profile()
+        if profile["gems"] < 5:
+            return jsonify({"error": "Not enough gems! Cost is 5 gems."}), 400
+            
+        conn = db.get_db()
+        status_row = conn.execute('SELECT attempts, status FROM user_puzzle_status WHERE puzzle_id = ?', (puzzle_id,)).fetchone()
+        puzzle_row = conn.execute('SELECT type FROM puzzles WHERE id = ?', (puzzle_id,)).fetchone()
+        
+        if not status_row or not puzzle_row:
+            conn.close()
+            return jsonify({"error": "Puzzle status not found."}), 400
+            
+        max_att = get_max_attempts(puzzle_row['type'])
+        if status_row['attempts'] < max_att:
+            conn.close()
+            return jsonify({"error": "Mineshaft is not collapsed!"}), 400
+            
+        cursor = conn.cursor()
+        # Reset attempts and deduct 5 gems
+        cursor.execute('UPDATE user_puzzle_status SET attempts = 0 WHERE puzzle_id = ?', (puzzle_id,))
+        cursor.execute('UPDATE user_profile SET gems = gems - 5 WHERE id = 1')
+        conn.commit()
+        conn.close()
+        
+        new_profile = db.get_user_profile()
+        return jsonify({
+            "status": "success",
+            "gems": new_profile["gems"]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     # Listen on all interfaces (for Tailscale remote access) on port 8003
     app.run(host='0.0.0.0', port=8003, debug=True)
