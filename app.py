@@ -198,6 +198,7 @@ def get_puzzle(puzzle_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/puzzle/<int:puzzle_id>/hint', methods=['POST'])
 @app.route('/api/puzzle/<int:puzzle_id>/hint/unlock', methods=['POST'])
 def unlock_hint(puzzle_id):
     try:

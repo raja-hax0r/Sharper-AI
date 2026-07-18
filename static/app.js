@@ -459,6 +459,10 @@ const app = {
     },
 
     renderQuestionsList(questions) {
+        if (!Array.isArray(questions)) {
+            el.shaftQuestions.innerHTML = `<div class="text-red font-xs">Error opening shaft: invalid data received.</div>`;
+            return;
+        }
         if (questions.length === 0) {
             el.shaftQuestions.innerHTML = `<div class="text-muted font-sm">No puzzle extractions here yet. Run 'Dig Deeper' to generate one!</div>`;
             return;
