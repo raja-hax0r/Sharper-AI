@@ -2,6 +2,7 @@ import sqlite3
 import json
 import os
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 DB_PATH = 'mineshaft.db'
 
@@ -14,13 +15,16 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
     
-    # 1. User Profile table
+    # 1. Users table
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS user_profile (
-            id INTEGER PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
             depth_meters INTEGER DEFAULT 0,
             gems INTEGER DEFAULT 17,
-            last_active TEXT
+            last_active TEXT,
+            created_at TEXT
         )
     ''')
     
@@ -46,6 +50,7 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_puzzle_status (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
             puzzle_id INTEGER,
             status TEXT DEFAULT 'unsolved', -- 'unsolved', 'solved'
             hints_revealed INTEGER DEFAULT 0, -- 0 to 3
@@ -54,6 +59,7 @@ def init_db():
             user_notes TEXT,
             solved_at TEXT,
             attempts INTEGER DEFAULT 0,
+            FOREIGN KEY(user_id) REFERENCES users(id),
             FOREIGN KEY(puzzle_id) REFERENCES puzzles(id)
         )
     ''')
@@ -62,18 +68,25 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS drillin_messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
             puzzle_id INTEGER,
             sender TEXT, -- 'user', 'drillin'
             message TEXT,
             created_at TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(id),
             FOREIGN KEY(puzzle_id) REFERENCES puzzles(id)
         )
     ''')
     
-    # Check if user profile is seeded
-    cursor.execute('SELECT COUNT(*) FROM user_profile')
-    if cursor.fetchone()[0] == 0:
-        cursor.execute('INSERT INTO user_profile (id, depth_meters, gems, last_active) VALUES (1, 0, 17, NULL)')
+    # Column checks to dynamically migrate existing DB files
+    try:
+        cursor.execute("ALTER TABLE user_puzzle_status ADD COLUMN user_id INTEGER")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        cursor.execute("ALTER TABLE drillin_messages ADD COLUMN user_id INTEGER")
+    except sqlite3.OperationalError:
+        pass
     
     # Check if puzzles table is seeded
     cursor.execute('SELECT COUNT(*) FROM puzzles WHERE type LIKE "shaft_%"')
@@ -351,33 +364,33 @@ def seed_puzzles(cursor):
             VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (p["type"], p["question_text"], p["answer_type"], choices_str, p["exact_answer"], p["explanation"], p["hints"], p["gem_reward"], p["chart_data"], now))
 
-def get_user_profile():
+def get_user_profile(user_id):
     conn = get_db()
-    profile = conn.execute('SELECT * FROM user_profile WHERE id = 1').fetchone()
+    profile = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
     conn.close()
     return dict(profile) if profile else None
 
-def update_gems(amount):
+def update_gems(user_id, amount):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('UPDATE user_profile SET gems = gems + ? WHERE id = 1', (amount,))
-    cursor.execute('SELECT gems FROM user_profile WHERE id = 1')
+    cursor.execute('UPDATE users SET gems = gems + ? WHERE id = ?', (amount, user_id))
+    cursor.execute('SELECT gems FROM users WHERE id = ?', (user_id,))
     new_gems = cursor.fetchone()[0]
     conn.commit()
     conn.close()
     return new_gems
 
-def add_depth(meters):
+def add_depth(user_id, meters):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('UPDATE user_profile SET depth_meters = depth_meters + ? WHERE id = 1', (meters,))
-    cursor.execute('SELECT depth_meters FROM user_profile WHERE id = 1')
+    cursor.execute('UPDATE users SET depth_meters = depth_meters + ? WHERE id = ?', (meters, user_id))
+    cursor.execute('SELECT depth_meters FROM users WHERE id = ?', (user_id,))
     new_depth = cursor.fetchone()[0]
     conn.commit()
     conn.close()
     return new_depth
 
-def get_puzzles_by_shaft(shaft_type):
+def get_puzzles_by_shaft(user_id, shaft_type):
     conn = get_db()
     query = '''
         SELECT p.id, p.type, p.question_text, p.answer_type, p.choices, p.gem_reward, p.chart_data,
@@ -386,14 +399,14 @@ def get_puzzles_by_shaft(shaft_type):
                COALESCE(ups.drillin_active, 0) as drillin_active,
                ups.user_notes, ups.attempts
          FROM puzzles p
-         LEFT JOIN user_puzzle_status ups ON p.id = ups.puzzle_id
+         LEFT JOIN user_puzzle_status ups ON p.id = ups.puzzle_id AND ups.user_id = ?
          WHERE p.type = ?
     '''
-    rows = conn.execute(query, (shaft_type,)).fetchall()
+    rows = conn.execute(query, (user_id, shaft_type,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
-def get_puzzle_detail(puzzle_id):
+def get_puzzle_detail(user_id, puzzle_id):
     conn = get_db()
     # Get basic detail
     puzzle = conn.execute('SELECT * FROM puzzles WHERE id = ?', (puzzle_id,)).fetchone()
@@ -404,7 +417,7 @@ def get_puzzle_detail(puzzle_id):
     puzzle_dict = dict(puzzle)
     
     # Get user status
-    status = conn.execute('SELECT * FROM user_puzzle_status WHERE puzzle_id = ?', (puzzle_id,)).fetchone()
+    status = conn.execute('SELECT * FROM user_puzzle_status WHERE puzzle_id = ? AND user_id = ?', (puzzle_id, user_id)).fetchone()
     status_dict = dict(status) if status else {"status": "unsolved", "hints_revealed": 0, "drillin_active": 0, "user_answer": None, "user_notes": None, "attempts": 0}
     
     # Hide solution fields if unsolved
@@ -430,57 +443,57 @@ def get_puzzle_raw(puzzle_id):
     conn.close()
     return dict(puzzle) if puzzle else None
 
-def unlock_hint_db(puzzle_id):
+def unlock_hint_db(user_id, puzzle_id):
     conn = get_db()
     cursor = conn.cursor()
     
     # Check current status
-    status = cursor.execute('SELECT * FROM user_puzzle_status WHERE puzzle_id = ?', (puzzle_id,)).fetchone()
+    status = cursor.execute('SELECT * FROM user_puzzle_status WHERE puzzle_id = ? AND user_id = ?', (puzzle_id, user_id)).fetchone()
     
     if not status:
-        cursor.execute('INSERT INTO user_puzzle_status (puzzle_id, status, hints_revealed) VALUES (?, "unsolved", 1)', (puzzle_id,))
+        cursor.execute('INSERT INTO user_puzzle_status (user_id, puzzle_id, status, hints_revealed) VALUES (?, ?, "unsolved", 1)', (user_id, puzzle_id))
         hints_revealed = 1
     else:
         status_dict = dict(status)
         hints_revealed = status_dict["hints_revealed"]
         if hints_revealed < 3:
             hints_revealed += 1
-            cursor.execute('UPDATE user_puzzle_status SET hints_revealed = ? WHERE puzzle_id = ?', (hints_revealed, puzzle_id))
+            cursor.execute('UPDATE user_puzzle_status SET hints_revealed = ? WHERE puzzle_id = ? AND user_id = ?', (hints_revealed, puzzle_id, user_id))
             
     # Deduct gems
-    cursor.execute('UPDATE user_profile SET gems = gems - 3 WHERE id = 1')
+    cursor.execute('UPDATE users SET gems = gems - 3 WHERE id = ?', (user_id,))
     
     conn.commit()
     conn.close()
     
     return hints_revealed
 
-def activate_drillin_db(puzzle_id):
+def activate_drillin_db(user_id, puzzle_id):
     conn = get_db()
     cursor = conn.cursor()
     
     # Check status
-    status = cursor.execute('SELECT * FROM user_puzzle_status WHERE puzzle_id = ?', (puzzle_id,)).fetchone()
+    status = cursor.execute('SELECT * FROM user_puzzle_status WHERE puzzle_id = ? AND user_id = ?', (puzzle_id, user_id)).fetchone()
     if not status:
-        cursor.execute('INSERT INTO user_puzzle_status (puzzle_id, status, drillin_active) VALUES (?, "unsolved", 1)', (puzzle_id,))
+        cursor.execute('INSERT INTO user_puzzle_status (user_id, puzzle_id, status, drillin_active) VALUES (?, ?, "unsolved", 1)', (user_id, puzzle_id))
     else:
-        cursor.execute('UPDATE user_puzzle_status SET drillin_active = 1 WHERE puzzle_id = ?', (puzzle_id,))
+        cursor.execute('UPDATE user_puzzle_status SET drillin_active = 1 WHERE puzzle_id = ? AND user_id = ?', (puzzle_id, user_id))
         
     # Deduct 2 gems
-    cursor.execute('UPDATE user_profile SET gems = gems - 2 WHERE id = 1')
+    cursor.execute('UPDATE users SET gems = gems - 2 WHERE id = ?', (user_id,))
     
     # Record trigger message in drillin_messages
     now = datetime.utcnow().isoformat()
     cursor.execute('''
-        INSERT INTO drillin_messages (puzzle_id, sender, message, created_at)
-        VALUES (?, "drillin", "Drillin console active. Connection established. Ask me to clarify parameters or details of this mine problem, user. Note: I will not give you clues or answers.", ?)
-    ''', (puzzle_id, now))
+        INSERT INTO drillin_messages (user_id, puzzle_id, sender, message, created_at)
+        VALUES (?, ?, "drillin", "Drillin console active. Connection established. Ask me to clarify parameters or details of this mine problem, user. Note: I will not give you clues or answers.", ?)
+    ''', (user_id, puzzle_id, now))
     
     conn.commit()
     conn.close()
     return True
 
-def submit_answer_db(puzzle_id, user_answer):
+def submit_answer_db(user_id, puzzle_id, user_answer):
     conn = get_db()
     cursor = conn.cursor()
     
@@ -507,14 +520,14 @@ def submit_answer_db(puzzle_id, user_answer):
             pass
             
     # Check current status
-    status = cursor.execute('SELECT * FROM user_puzzle_status WHERE puzzle_id = ?', (puzzle_id,)).fetchone()
+    status = cursor.execute('SELECT * FROM user_puzzle_status WHERE puzzle_id = ? AND user_id = ?', (puzzle_id, user_id)).fetchone()
     
     now = datetime.utcnow().isoformat()
     if not status:
         cursor.execute('''
-            INSERT INTO user_puzzle_status (puzzle_id, status, user_answer, solved_at, attempts)
-            VALUES (?, ?, ?, ?, 1)
-        ''', (puzzle_id, 'solved' if is_correct else 'unsolved', user_answer, now if is_correct else None))
+            INSERT INTO user_puzzle_status (user_id, puzzle_id, status, user_answer, solved_at, attempts)
+            VALUES (?, ?, ?, ?, ?, 1)
+        ''', (user_id, puzzle_id, 'solved' if is_correct else 'unsolved', user_answer, now if is_correct else None))
     else:
         status_dict = dict(status)
         if status_dict["status"] == "solved":
@@ -525,19 +538,18 @@ def submit_answer_db(puzzle_id, user_answer):
         cursor.execute('''
             UPDATE user_puzzle_status
             SET status = ?, user_answer = ?, solved_at = ?, attempts = attempts + 1
-            WHERE puzzle_id = ?
-        ''', ('solved' if is_correct else 'unsolved', user_answer, now if is_correct else None, puzzle_id))
+            WHERE puzzle_id = ? AND user_id = ?
+        ''', ('solved' if is_correct else 'unsolved', user_answer, now if is_correct else None, puzzle_id, user_id))
         
     if is_correct:
         # Award gems and depth
         reward_gems = puzzle_dict["gem_reward"]
-        cursor.execute('UPDATE user_profile SET gems = gems + ? WHERE id = 1', (reward_gems,))
+        cursor.execute('UPDATE users SET gems = gems + ? WHERE id = ?', (reward_gems, user_id))
         
         # Calculate depth reward
-        # Coal=2m, Iron=5m, Gold=10m, Ruby=15m, Diamond=25m
         depth_map = {"shaft_1": 2, "shaft_2": 5, "shaft_3": 10, "shaft_4": 15, "shaft_5": 25, "daily": 5, "weekly": 15}
         depth_reward = depth_map.get(puzzle_dict["type"], 5)
-        cursor.execute('UPDATE user_profile SET depth_meters = depth_meters + ? WHERE id = 1', (depth_reward,))
+        cursor.execute('UPDATE users SET depth_meters = depth_meters + ? WHERE id = ?', (depth_reward, user_id))
         
     conn.commit()
     conn.close()
@@ -548,39 +560,39 @@ def submit_answer_db(puzzle_id, user_answer):
         "gem_reward": puzzle_dict["gem_reward"] if is_correct else 0
     }
 
-def save_puzzle_notes_db(puzzle_id, notes):
+def save_puzzle_notes_db(user_id, puzzle_id, notes):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('UPDATE user_puzzle_status SET user_notes = ? WHERE puzzle_id = ?', (notes, puzzle_id))
+    cursor.execute('UPDATE user_puzzle_status SET user_notes = ? WHERE puzzle_id = ? AND user_id = ?', (notes, puzzle_id, user_id))
     conn.commit()
     conn.close()
     return True
 
-def get_archive_db():
+def get_archive_db(user_id):
     conn = get_db()
     query = '''
         SELECT p.id, p.type, p.question_text, p.answer_type, p.choices, p.gem_reward, p.chart_data, p.explanation, p.exact_answer,
                ups.user_notes, ups.solved_at, ups.user_answer
         FROM puzzles p
-        JOIN user_puzzle_status ups ON p.id = ups.puzzle_id
+        JOIN user_puzzle_status ups ON p.id = ups.puzzle_id AND ups.user_id = ?
         WHERE ups.status = 'solved'
         ORDER BY ups.solved_at DESC
     '''
-    rows = conn.execute(query).fetchall()
+    rows = conn.execute(query, (user_id,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
-def get_drillin_chat_db(puzzle_id):
+def get_drillin_chat_db(user_id, puzzle_id):
     conn = get_db()
-    rows = conn.execute('SELECT * FROM drillin_messages WHERE puzzle_id = ? ORDER BY id ASC', (puzzle_id,)).fetchall()
+    rows = conn.execute('SELECT * FROM drillin_messages WHERE puzzle_id = ? AND user_id = ? ORDER BY id ASC', (puzzle_id, user_id)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
-def add_drillin_message_db(puzzle_id, sender, message):
+def add_drillin_message_db(user_id, puzzle_id, sender, message):
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
-    cursor.execute('INSERT INTO drillin_messages (puzzle_id, sender, message, created_at) VALUES (?, ?, ?, ?)', (puzzle_id, sender, message, now))
+    cursor.execute('INSERT INTO drillin_messages (user_id, puzzle_id, sender, message, created_at) VALUES (?, ?, ?, ?, ?)', (user_id, puzzle_id, sender, message, now))
     conn.commit()
     conn.close()
     return True
@@ -597,3 +609,37 @@ def save_new_puzzle(puzzle_type, question_text, answer_type, choices, exact_answ
     conn.commit()
     conn.close()
     return puzzle_id
+
+def register_user_db(username, password):
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Check if username exists
+    existing = cursor.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
+    if existing:
+        conn.close()
+        return None
+        
+    now = datetime.utcnow().isoformat()
+    p_hash = generate_password_hash(password)
+    # Default gems = 17, depth = 0
+    cursor.execute('INSERT INTO users (username, password_hash, created_at, gems, depth_meters) VALUES (?, ?, ?, 17, 0)', (username, p_hash, now))
+    user_id = cursor.lastrowid
+    
+    conn.commit()
+    conn.close()
+    return user_id
+
+def authenticate_user_db(username, password):
+    conn = get_db()
+    user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+    conn.close()
+    
+    if not user:
+        return None
+        
+    user_dict = dict(user)
+    if check_password_hash(user_dict["password_hash"], password):
+        return user_dict["id"]
+        
+    return None

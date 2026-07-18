@@ -24,6 +24,8 @@
             </div>
             
             <div class="header-status">
+                <!-- Username display -->
+                <span id="header-username" class="pixel-text text-gold font-xs" style="margin-right: 12px; text-transform: uppercase;">MINER: NONE</span>
                 <!-- Gems balance -->
                 <div class="status-item gem-gauge">
                     <span class="label">RESOURCES:</span>
@@ -36,6 +38,7 @@
                 <!-- Navigation Icons -->
                 <button class="pixel-btn-icon" title="Cognitive Archive" onclick="app.confirmGoArchive()">📚</button>
                 <button class="pixel-btn-icon" title="Mineshaft Settings" onclick="app.confirmGoSettings()">⚙️</button>
+                <button class="pixel-btn-icon" title="Terminate Session" onclick="app.logout()">🔌</button>
             </div>
         </header>
 

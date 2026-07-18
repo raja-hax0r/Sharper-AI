@@ -16,9 +16,20 @@ const state = {
     solveSecondsElapsed: 0
 };
 
+// INTERCEPT UNAUTHORIZED API CALLS
+const originalFetch = window.fetch;
+window.fetch = async function(...args) {
+    const response = await originalFetch(...args);
+    if (response.status === 401) {
+        window.location.href = '/login';
+    }
+    return response;
+};
+
 // SELECT ELEMENTS
 const el = {
     headerGems: document.getElementById('header-gems'),
+    headerUsername: document.getElementById('header-username'),
     musicBtn: document.getElementById('music-btn'),
     meinschaftSpeech: document.getElementById('meinschaft-speech'),
     liveClock: document.getElementById('live-clock'),
@@ -250,6 +261,17 @@ const app = {
         this.exitMineFlow(() => this.enterShaft(state.activeShaft || 'shaft_1'));
     },
 
+    async logout() {
+        if (confirm("Terminate active session and secure console?")) {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (err) {
+                console.error("Logout failed:", err);
+            }
+        }
+    },
+
     exitMineFlow(actionCallback) {
         if (state.activePuzzle && state.activePuzzle.status_info.status !== 'solved') {
             if (!confirm("Are you sure you want to exit the mine? Progress in this shift will be abandoned.")) {
@@ -357,6 +379,9 @@ const app = {
             
             // Update UI Gauges
             el.headerGems.innerText = `💎 ${state.gems}`;
+            if (el.headerUsername && data.username) {
+                el.headerUsername.innerText = `MINER: ${data.username.toUpperCase()}`;
+            }
             
             // Update Badges
             const dailyBadge = document.getElementById('daily-solved-badge');
