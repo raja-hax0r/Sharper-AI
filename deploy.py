@@ -38,8 +38,11 @@ def deploy():
             run_cmd(f"scp -i {SSH_KEY} -o StrictHostKeyChecking=no {file} root@{VPS_IP}:{VPS_PATH}/{file}")
             
     # 3. SCP HTML templates and static assets
-    if os.path.exists("templates/index.html"):
-        run_cmd(f"scp -i {SSH_KEY} -o StrictHostKeyChecking=no templates/index.html root@{VPS_IP}:{VPS_PATH}/templates/index.html")
+    templates_to_transfer = ["index.html", "login.html"]
+    for template in templates_to_transfer:
+        path = os.path.join("templates", template)
+        if os.path.exists(path):
+            run_cmd(f"scp -i {SSH_KEY} -o StrictHostKeyChecking=no {path} root@{VPS_IP}:{VPS_PATH}/templates/{template}")
         
     static_files = ["app.js", "style.css", "bg.png", "bgm3.wav"]
     import glob
