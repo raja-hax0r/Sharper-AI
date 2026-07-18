@@ -41,7 +41,7 @@ def deploy():
     if os.path.exists("templates/index.html"):
         run_cmd(f"scp -i {SSH_KEY} -o StrictHostKeyChecking=no templates/index.html root@{VPS_IP}:{VPS_PATH}/templates/index.html")
         
-    static_files = ["app.js", "style.css", "bg.png", "bgm2.wav"]
+    static_files = ["app.js", "style.css", "bg.png", "bgm3.wav"]
     for s_file in static_files:
         path = os.path.join("static", s_file)
         if os.path.exists(path):

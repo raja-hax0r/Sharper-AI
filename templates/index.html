@@ -11,9 +11,9 @@
     <!-- Custom stylesheet -->
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body class="home-active">
     <!-- Background Music -->
-    <audio id="bgm" src="/static/bgm2.wav" loop></audio>
+    <audio id="bgm" src="/static/bgm3.wav" loop></audio>
 
     <div class="app-container">
         <!-- Persistent App Header -->
@@ -301,7 +301,7 @@
                         <h3 class="pixel-text font-sm text-red mb-05">⚙️ GAME CONTROL</h3>
                         <div class="form-group mb-1">
                             <label class="font-sm font-bold text-muted block mb-05">Background Audio Volume</label>
-                            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.15" oninput="app.adjustVolume(this.value)">
+                            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5" oninput="app.adjustVolume(this.value)">
                         </div>
                         
                         <hr class="border-red mb-1">

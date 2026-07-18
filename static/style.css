@@ -217,16 +217,10 @@ body {
 }
 
 .home-panel {
-    background-image: url('/static/bg.png'); /* Clear background image */
-    background-size: cover;
-    background-position: center;
-    border: 4px solid var(--border-color);
-    border-radius: 8px;
-    height: calc(100vh - 100px); /* Fill screen minus header */
-    max-height: 620px;
+    background: transparent;
+    height: 100%;
     width: 100%;
     position: relative; /* Essential for absolute tuck layers */
-    box-shadow: 0 0 25px rgba(128, 0, 16, 0.35);
 }
 
 /* Tucked-Away Character (Top Left) */
@@ -996,16 +990,21 @@ body {
     }
 }
 
-/* FULLSCREEN SCENIC HOMEPAGE LAYOUT RULES */
+/* FULLSCREEN SCENIC HOMEPAGE LAYOUT RULES - ELIMINATES VERTICAL SHIFTS */
+body.home-active {
+    background-image: url('/static/bg.png') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+}
+
 body.home-active .app-header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    border-bottom: none;
-    background: transparent;
-    padding: 1rem 2rem;
+    background-color: transparent !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
 }
 
 body.home-active .app-main {
@@ -1014,16 +1013,21 @@ body.home-active .app-main {
 }
 
 body.home-active #view-home {
-    height: 100vh;
-    width: 100vw;
+    height: calc(100vh - 85px); /* Restrict to remaining height naturally */
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 body.home-active .home-panel {
-    height: 100vh;
-    width: 100vw;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 1rem 0;
+    position: relative;
 }

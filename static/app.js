@@ -109,7 +109,7 @@ const app = {
         const musicEnabled = localStorage.getItem('bgm_enabled') !== 'false';
         localStorage.setItem('bgm_enabled', musicEnabled);
         
-        const volume = localStorage.getItem('bgm_volume') || '0.15';
+        const volume = localStorage.getItem('bgm_volume') || '0.5';
         bgm.volume = parseFloat(volume);
         el.volumeSlider.value = volume;
 
