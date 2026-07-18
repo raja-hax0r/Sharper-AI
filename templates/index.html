@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pariah's Mineshaft — Cognitive Gym</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom stylesheet -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="crt-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Background Music -->
+    <audio id="bgm" src="/static/bgm.wav" loop></audio>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="header-logo" onclick="app.showHome()">
+                <span class="logo-pixel">⛏️</span>
+                <h1 class="pixel-text">PARIAH'S MINESHAFT</h1>
+            </div>
+            
+            <div class="header-status">
+                <div class="status-item depth-gauge">
+                    <span class="label">DEPTH:</span>
+                    <span id="header-depth" class="value pixel-text">0m</span>
+                </div>
+                <div class="status-item gem-gauge">
+                    <span class="label">GEMS:</span>
+                    <span id="header-gems" class="value pixel-text">💎 17</span>
+                </div>
+                <div class="audio-control" onclick="app.toggleMusic()">
+                    <button id="music-btn" class="pixel-btn-sm text-red">🎵 OFF</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN SPA PANEL -->
+        <main class="app-main">
+            
+            <!-- VIEW 1: HOME/WELCOME -->
+            <section id="view-home" class="view-section active">
+                <div class="welcome-card" style="background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url('/static/bg.jpg');">
+                    <div class="welcome-hero">
+                        <div class="meinschaft-container">
+                            <!-- Herr Meinschaft SVG -->
+                            <svg class="herr-meinschaft" viewBox="0 0 20 23" width="120" height="138">
+                                <!-- Top Hat -->
+                                <rect x="6" y="1" width="8" height="5" fill="#111" />
+                                <rect x="4" y="5" width="12" height="1" fill="#111" />
+                                <!-- Ribbon -->
+                                <rect x="6" y="4" width="8" height="1" fill="#800000" />
+                                <!-- Face -->
+                                <rect x="6" y="6" width="8" height="6" fill="#FCD1A1" />
+                                <!-- Eyes -->
+                                <rect x="8" y="8" width="1" height="1" fill="#111" />
+                                <!-- Monocle (Gold chain & Glass lens on right side) -->
+                                <rect x="11" y="7" width="3" height="3" fill="#FFD700" />
+                                <rect x="12" y="8" width="1" height="1" fill="#80e0ff" />
+                                <rect x="14" y="9" width="2" height="1" fill="#FFD700" />
+                                <rect x="15" y="10" width="1" height="3" fill="#FFD700" />
+                                <!-- Mustache / Mouth -->
+                                <rect x="7" y="10" width="6" height="1" fill="#4A2511" />
+                                <rect x="9" y="11" width="2" height="1" fill="#111" />
+                                <!-- Suit -->
+                                <rect x="5" y="12" width="10" height="8" fill="#111" />
+                                <rect x="9" y="12" width="2" height="3" fill="#FFF" />
+                                <rect x="9.5" y="13" width="1" height="2" fill="#800000" />
+                                <!-- Arms -->
+                                <rect x="3" y="13" width="2" height="5" fill="#111" />
+                                <rect x="15" y="13" width="2" height="5" fill="#111" />
+                                <rect x="3" y="18" width="2" height="1" fill="#FCD1A1" />
+                                <rect x="15" y="18" width="2" height="1" fill="#FCD1A1" />
+                                <!-- Cane -->
+                                <rect x="16" y="14" width="1" height="8" fill="#8B4513" />
+                                <rect x="15" y="14" width="2" height="1" fill="#8B4513" />
+                                <!-- Legs -->
+                                <rect x="6" y="20" width="3" height="2" fill="#222" />
+                                <rect x="11" y="20" width="3" height="2" fill="#222" />
+                                <!-- Shoes -->
+                                <rect x="5" y="22" width="3" height="1" fill="#000" />
+                                <rect x="12" y="22" width="3" height="1" fill="#000" />
+                            </svg>
+                            <div class="bubble-chat">
+                                <div class="pixel-bubble-text text-red" id="meinschaft-speech">
+                                    "Ah, another shift in the mindshaft, Herr Pariah. Pick up your calculator and logic tools. We have gems to extract."
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-challenges">
+                        <div class="challenge-btn-container">
+                            <button class="pixel-btn-lg red-glow" onclick="app.loadDailyPuzzle()">
+                                <span class="pixel-text font-lg">DAILY MINE</span>
+                                <span id="daily-solved-badge" class="badge badge-unsolved">UNSOLVED</span>
+                            </button>
+                        </div>
+                        <div class="challenge-btn-container">
+                            <button class="pixel-btn-lg red-glow" onclick="app.loadWeeklyPuzzle()">
+                                <span class="pixel-text font-lg">WEEKLY EXPEDITION</span>
+                                <span id="weekly-solved-badge" class="badge badge-unsolved">UNSOLVED</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MINESHAFTS DIFFICULTY LIST -->
+                <div class="shaft-hub">
+                    <h2 class="pixel-text text-red title-center">CHOOSE A MINESHAFT</h2>
+                    <div class="shaft-grid">
+                        <!-- Shaft 1 -->
+                        <div class="shaft-card card-coal" onclick="app.enterShaft('shaft_1')">
+                            <div class="shaft-info">
+                                <h3 class="pixel-text">SHAFT I: COAL MINE</h3>
+                                <p class="description">Class: Quick Business Math (ROI, margins, break-even)</p>
+                            </div>
+                            <div class="shaft-reward text-green font-bold">💎 2 per solve</div>
+                        </div>
+                        <!-- Shaft 2 -->
+                        <div class="shaft-card card-iron" onclick="app.enterShaft('shaft_2')">
+                            <div class="shaft-info">
+                                <h3 class="pixel-text">SHAFT II: IRON MINE</h3>
+                                <p class="description">Class: Data Interpretation (Averages, warning limit analysis)</p>
+                            </div>
+                            <div class="shaft-reward text-green font-bold">💎 5 per solve</div>
+                        </div>
+                        <!-- Shaft 3 -->
+                        <div class="shaft-card card-gold" onclick="app.enterShaft('shaft_3')">
+                            <div class="shaft-info">
+                                <h3 class="pixel-text">SHAFT III: GOLD MINE</h3>
+                                <p class="description">Class: Capacity Optimization (Instance budgets, traffic balance)</p>
+                            </div>
+                            <div class="shaft-reward text-green font-bold">💎 10 per solve</div>
+                        </div>
+                        <!-- Shaft 4 -->
+                        <div class="shaft-card card-ruby" onclick="app.enterShaft('shaft_4')">
+                            <div class="shaft-info">
+                                <h3 class="pixel-text">SHAFT IV: RUBY MINE</h3>
+                                <p class="description">Class: Logical Deductions (Constraints, path reliability)</p>
+                            </div>
+                            <div class="shaft-reward text-green font-bold">💎 15 per solve</div>
+                        </div>
+                        <!-- Shaft 5 -->
+                        <div class="shaft-card card-diamond" onclick="app.enterShaft('shaft_5')">
+                            <div class="shaft-info">
+                                <h3 class="pixel-text">SHAFT V: DIAMOND MINE</h3>
+                                <p class="description">Class: Complex Multi-Class Financial Logic (Probability, trade-offs)</p>
+                            </div>
+                            <div class="shaft-reward text-green font-bold">💎 25 per solve</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOOTER ACTIONS -->
+                <div class="home-footer-actions">
+                    <button class="pixel-btn border-red text-red" onclick="app.showArchive()">📚 COGNITIVE ARCHIVE</button>
+                    <button class="pixel-btn border-red text-red" onclick="app.showSettings()">⚙️ SETTINGS & MANUAL</button>
+                </div>
+            </section>
+
+
+            <!-- VIEW 2: SHAFTS / QUESTION BANK -->
+            <section id="view-shaft" class="view-section">
+                <div class="section-nav">
+                    <button class="pixel-btn-sm" onclick="app.showHome()">◀ BACK TO MAP</button>
+                    <h2 id="shaft-title" class="pixel-text text-red">COAL MINESHAFT</h2>
+                </div>
+                
+                <div class="shaft-intro-card">
+                    <p id="shaft-description">This shaft extracts simple numerical relations, helping you build fast mental calculation templates for corporate expenses.</p>
+                </div>
+
+                <div class="question-list-container">
+                    <h3 class="pixel-text font-sm text-red mb-1">AVAILABLE EXTRACTION SITES</h3>
+                    <div id="shaft-questions" class="questions-list">
+                        <!-- Questions dynamically loaded here -->
+                    </div>
+                </div>
+
+                <div class="dig-deeper-box border-dashed border-red">
+                    <h4 class="pixel-text font-sm text-red mb-05">RUN OUT OF ORE?</h4>
+                    <p class="font-sm mb-1 text-muted">Generate a brand new puzzle in this class using OpenAI. Costs no gems, but takes a few seconds to extract.</p>
+                    <button id="btn-dig-deeper" class="pixel-btn red-glow" onclick="app.generateNewQuestion()">⛏️ DIG DEEPER (NEW PUZZLE)</button>
+                </div>
+            </section>
+
+
+            <!-- VIEW 3: SOLVE PUZZLE -->
+            <section id="view-solve" class="view-section">
+                <div class="section-nav">
+                    <button class="pixel-btn-sm" onclick="app.abandonPuzzle()">◀ ABANDON SHIFT</button>
+                    <h2 id="solve-title" class="pixel-text text-red">EXTRACTION SITE</h2>
+                </div>
+
+                <div class="solve-workspace">
+                    <!-- LEFT WORK AREA (Question, Visuals, Input, Hints) -->
+                    <div class="solve-left">
+                        <div class="puzzle-card">
+                            <div class="puzzle-header">
+                                <span id="puzzle-difficulty-tag" class="pixel-text font-xs text-red">DIFFICULTY: COAL</span>
+                                <span id="puzzle-reward-tag" class="text-green font-bold">💎 2 Gems</span>
+                            </div>
+                            
+                            <!-- Question Text -->
+                            <div id="puzzle-question" class="puzzle-body-text">
+                                Loading puzzle extraction details...
+                            </div>
+                        </div>
+
+                        <!-- Graphical Display -->
+                        <div id="puzzle-visual-card" class="visual-card">
+                            <div class="visual-header">
+                                <span class="pixel-text font-xs text-red">📊 DATA INTERPRETATION CHART</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="puzzle-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Submission Form -->
+                        <div id="puzzle-action-card" class="puzzle-action-card">
+                            <!-- Unsolved options -->
+                            <div id="solve-unsolved-section">
+                                <div id="multiple-choice-container" class="mc-choices-grid hidden">
+                                    <!-- Choice buttons dynamically created -->
+                                </div>
+                                <div id="text-input-container" class="text-input-row">
+                                    <input type="text" id="user-answer-input" placeholder="Type final numerical or short text answer..." autocomplete="off">
+                                    <button class="pixel-btn red-glow" onclick="app.submitAnswer()">SUBMIT ANSWER</button>
+                                </div>
+                                <div id="solve-attempts" class="attempts-info text-red font-xs mt-05">Attempts: 0</div>
+                            </div>
+
+                            <!-- Solved Section / Notes Writing -->
+                            <div id="solve-solved-section" class="solved-success-card hidden">
+                                <div class="success-banner">
+                                    <span class="pixel-text text-green font-md">✔ SITE EXTRACTION SUCCESSFUL!</span>
+                                    <p id="solve-gems-rewarded" class="text-green font-xs mb-05">+2 Gems, +2 meters depth</p>
+                                </div>
+                                
+                                <div class="explanation-box">
+                                    <h4 class="pixel-text font-xs text-red mb-05">MATHEMATICAL PATHWAY (EXPLANATION):</h4>
+                                    <p id="solve-explanation" class="font-sm"></p>
+                                </div>
+
+                                <div class="cognitive-notes-box">
+                                    <h4 class="pixel-text font-xs text-red mb-05">📝 COGNITIVE REINFORCEMENT (YOUR APPROACH)</h4>
+                                    <p class="font-xs text-muted mb-05">Explain the logic in your own words. Writing it down commits it to memory, ensuring you can explain it to your boss under pressure.</p>
+                                    <textarea id="solve-user-notes" placeholder="How did you solve this? What is the core logic? Write it down..."></textarea>
+                                    <button class="pixel-btn border-red text-red mt-05" onclick="app.saveNotes()">SAVE TO ARCHIVE</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hints Shop -->
+                        <div class="hints-card" id="hints-card-section">
+                            <h4 class="pixel-text font-xs text-red mb-05">⚙️ HINT EXTRACTION</h4>
+                            <div id="hints-revealed-list" class="hints-list font-sm mb-05">
+                                <!-- Hints list -->
+                            </div>
+                            <button id="btn-buy-hint" class="pixel-btn-sm red-glow" onclick="app.buyHint()">🔓 EXTRACT HINT (COSTS 💎 3)</button>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT CHATBOX (Drillin Terminal) -->
+                    <div class="solve-right">
+                        <div class="drillin-console">
+                            <div class="console-header">
+                                <span class="pixel-text font-xs">DRILLIN CONSOLE v1.0</span>
+                                <span id="drillin-status-tag" class="blink text-red">OFFLINE</span>
+                            </div>
+                            
+                            <!-- Chat Log -->
+                            <div id="drillin-chat-log" class="console-body">
+                                <div class="system-msg">
+                                    *** SYSTEM: DRILLIN INTERNET PROTOCOL DISCONNECTED ***<br>
+                                    Drillin is an AI support assistant on this site. He does not solve problems or provide direct hints. He only clarifies question parameters before solving, and analyzes your mathematical approach after solving.<br><br>
+                                    Connection Cost: 💎 2 (Gives access for the entire duration of this problem).
+                                </div>
+                            </div>
+                            
+                            <!-- Buy Console -->
+                            <div id="drillin-buy-box" class="console-input-area justify-center">
+                                <button class="pixel-btn-sm red-glow" onclick="app.activateDrillin()">🔋 CONNECT DRILLIN (💎 2)</button>
+                            </div>
+
+                            <!-- Chat Input -->
+                            <div id="drillin-input-box" class="console-input-area hidden">
+                                <input type="text" id="drillin-message-input" placeholder="Type query to Drillin..." autocomplete="off">
+                                <button class="pixel-btn-sm border-red text-red" onclick="app.sendDrillinMessage()">SEND</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- VIEW 4: ARCHIVE -->
+            <section id="view-archive" class="view-section">
+                <div class="section-nav">
+                    <button class="pixel-btn-sm" onclick="app.showHome()">◀ BACK TO MAP</button>
+                    <h2 class="pixel-text text-red">COGNITIVE ARCHIVE</h2>
+                </div>
+
+                <div class="archive-intro font-sm mb-1 text-muted">
+                    Review your previously extracted database entries, study the mathematical pathways, and read your own logic reflections. Use this to review before meeting leadership.
+                </div>
+
+                <div class="archive-list" id="archive-list-container">
+                    <!-- Solved items list -->
+                </div>
+            </section>
+
+
+            <!-- VIEW 5: SETTINGS & MANUAL -->
+            <section id="view-settings" class="view-section">
+                <div class="section-nav">
+                    <button class="pixel-btn-sm" onclick="app.showHome()">◀ BACK TO MAP</button>
+                    <h2 class="pixel-text text-red">MINESHAFT CONFIGURATION</h2>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3 class="pixel-text font-sm text-red mb-05">⚙️ GAME CONTROL</h3>
+                        <div class="form-group mb-1">
+                            <label class="font-sm font-bold text-muted block mb-05">Background Audio Volume</label>
+                            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5" oninput="app.adjustVolume(this.value)">
+                        </div>
+                        <div class="form-group mb-1">
+                            <label class="font-sm font-bold text-muted block mb-05">CRT Screen Glitch Style</label>
+                            <button class="pixel-btn-sm border-red text-red" onclick="app.toggleCRT()">TOGGLE CRT SCANLINES</button>
+                        </div>
+                        
+                        <hr class="border-red mb-1">
+
+                        <h3 class="pixel-text font-sm text-red mb-05">⚠️ HAZARDOUS OPERATIONS</h3>
+                        <p class="font-xs text-muted mb-1">Warning: resetting wipes all your stats, database records of solved questions, depth progression, and restores initial gem count to 17.</p>
+                        <button class="pixel-btn border-red text-red" onclick="app.resetProgress()">💥 RESET PROGRESS DATA</button>
+                    </div>
+
+                    <div class="settings-card font-sm">
+                        <h3 class="pixel-text font-sm text-red mb-05">📖 COGNITIVE MANUAL</h3>
+                        <p class="mb-05">Welcome to <strong>Pariah's Mineshaft</strong>, corporate worker. When your thinking begins to feel secondary to AI generation, it is time to dig.</p>
+                        <p class="mb-05"><strong>1. Mineshafts (Classes)</strong>: Each shaft represents a different category of business thinking. Coal is arithmetic; Iron is chart reading; Gold is optimization; Ruby is logical matching; Diamond is complex multi-class business scenarios.</p>
+                        <p class="mb-05"><strong>2. Daily & Weekly Mines</strong>: The Daily Mine generates a medium-difficulty problem of any class once every 24 hours. The Weekly Expedition generates an intricate, multi-layered problem once a week. Solving these rewards major gems.</p>
+                        <p class="mb-05"><strong>3. Gems & Hints</strong>: Buying progressive clues costs 3 Gems. They help you solve without spoiling the answer. Solving questions earns gems.</p>
+                        <p class="mb-05"><strong>4. Drillin & Cognitive Archive</strong>: Activating Drillin costs 2 gems. He will verify question definitions for you, and review your solutions. Recording your approach in the Archive solidifies the logical model in your brain.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Script imports -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
