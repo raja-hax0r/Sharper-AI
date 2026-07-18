@@ -9,15 +9,19 @@ const state = {
     activePuzzle: null,
     activeShaft: null,
     drillinChatInterval: null,
-    currentChart: null
+    currentChart: null,
+    
+    // Timer state
+    solveTimerInterval: null,
+    solveSecondsElapsed: 0
 };
 
 // SELECT ELEMENTS
 const el = {
-    headerDepth: document.getElementById('header-depth'),
     headerGems: document.getElementById('header-gems'),
     musicBtn: document.getElementById('music-btn'),
     meinschaftSpeech: document.getElementById('meinschaft-speech'),
+    liveClock: document.getElementById('live-clock'),
     
     // Views
     viewHome: document.getElementById('view-home'),
@@ -31,6 +35,7 @@ const el = {
     shaftDescription: document.getElementById('shaft-description'),
     shaftQuestions: document.getElementById('shaft-questions'),
     btnDigDeeper: document.getElementById('btn-dig-deeper'),
+    shaftsModal: document.getElementById('shafts-modal'),
     
     // Solve view
     solveTitle: document.getElementById('solve-title'),
@@ -42,24 +47,32 @@ const el = {
     multipleChoiceContainer: document.getElementById('multiple-choice-container'),
     textInputContainer: document.getElementById('text-input-container'),
     userAnswerInput: document.getElementById('user-answer-input'),
+    btnSubmitAnswer: document.getElementById('btn-submit-answer'),
     solveAttempts: document.getElementById('solve-attempts'),
     solveUnsolvedSection: document.getElementById('solve-unsolved-section'),
     solveSolvedSection: document.getElementById('solve-solved-section'),
     solveGemsRewarded: document.getElementById('solve-gems-rewarded'),
+    solveTimeTaken: document.getElementById('solve-time-taken'),
     solveExplanation: document.getElementById('solve-explanation'),
-    solveUserNotes: document.getElementById('solve-user-notes'),
+    solveScratchpadInput: document.getElementById('solve-scratchpad-input'),
+    scratchpadSavedBadge: document.getElementById('scratchpad-saved-badge'),
+    solveTimer: document.getElementById('solve-timer'),
     hintsRevealedList: document.getElementById('hints-revealed-list'),
     btnBuyHint: document.getElementById('btn-buy-hint'),
     hintsCardSection: document.getElementById('hints-card-section'),
     
-    // Drillin Chat
+    // Drillin Floating Console
+    drillinFloatPanel: document.getElementById('drillin-float-panel'),
     drillinStatusTag: document.getElementById('drillin-status-tag'),
     drillinChatLog: document.getElementById('drillin-chat-log'),
     drillinBuyBox: document.getElementById('drillin-buy-box'),
     drillinInputBox: document.getElementById('drillin-input-box'),
     drillinMessageInput: document.getElementById('drillin-message-input'),
     
-    // Archive
+    // Archive Scorecard
+    scorecardSolvedCount: document.getElementById('scorecard-solved-count'),
+    scorecardDepth: document.getElementById('scorecard-depth'),
+    scorecardGems: document.getElementById('scorecard-gems'),
     archiveListContainer: document.getElementById('archive-list-container'),
     
     // Settings
@@ -74,17 +87,16 @@ let bgmInitialized = false;
 document.addEventListener('DOMContentLoaded', () => {
     app.init();
     
-    // Initialize audio play on first click (browser autoplay policy)
+    // Autoplay policy hook
     document.body.addEventListener('click', () => {
         if (!bgmInitialized) {
             bgmInitialized = true;
-            // Play if it is toggled on (by default let's start it muted/off as per user setting)
             if (localStorage.getItem('bgm_enabled') === 'true') {
                 bgm.play().then(() => {
                     el.musicBtn.classList.remove('text-red');
                     el.musicBtn.classList.add('text-green');
                     el.musicBtn.innerText = "🎵 ON";
-                }).catch(err => console.log("Audio play blocked: ", err));
+                }).catch(err => console.log("Audio blocked: ", err));
             }
         }
     }, { once: true });
@@ -92,17 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const app = {
     init() {
-        // Load settings from local storage
-        const musicEnabled = localStorage.getItem('bgm_enabled') !== 'false'; // default true
+        // Load configurations
+        const musicEnabled = localStorage.getItem('bgm_enabled') !== 'false';
         localStorage.setItem('bgm_enabled', musicEnabled);
-        
-        const crtEnabled = localStorage.getItem('crt_enabled') !== 'false'; // default true
-        localStorage.setItem('crt_enabled', crtEnabled);
-        
-        if (!crtEnabled) {
-            document.querySelector('.scanlines').classList.add('hidden');
-            document.querySelector('.crt-overlay').classList.add('hidden');
-        }
         
         const volume = localStorage.getItem('bgm_volume') || '0.5';
         bgm.volume = parseFloat(volume);
@@ -112,7 +116,6 @@ const app = {
             el.musicBtn.classList.remove('text-red');
             el.musicBtn.classList.add('text-green');
             el.musicBtn.innerText = "🎵 ON";
-            // Browser autoplay might block it on first load, handled by body click listener
         } else {
             el.musicBtn.classList.remove('text-green');
             el.musicBtn.classList.add('text-red');
@@ -120,39 +123,116 @@ const app = {
             bgm.pause();
         }
 
+        // Start Live Clock
+        this.startClock();
+
         // Fetch User Status
         this.loadStatus();
     },
 
+    // CLOCK TIMERS
+    startClock() {
+        const updateClock = () => {
+            const now = new Date();
+            const pad = num => String(num).padStart(2, '0');
+            const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+            const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+            el.liveClock.innerText = `${dateStr} ${timeStr}`;
+        };
+        updateClock();
+        setInterval(updateClock, 1000);
+    },
+
+    startSolveTimer() {
+        this.stopSolveTimer();
+        state.solveSecondsElapsed = 0;
+        el.solveTimer.innerText = "TIME: 00:00";
+        
+        state.solveTimerInterval = setInterval(() => {
+            state.solveSecondsElapsed++;
+            const minutes = Math.floor(state.solveSecondsElapsed / 60);
+            const seconds = state.solveSecondsElapsed % 60;
+            const pad = num => String(num).padStart(2, '0');
+            el.solveTimer.innerText = `TIME: ${pad(minutes)}:${pad(seconds)}`;
+        }, 1000);
+    },
+
+    stopSolveTimer() {
+        if (state.solveTimerInterval) {
+            clearInterval(state.solveTimerInterval);
+            state.solveTimerInterval = null;
+        }
+    },
+
+    formatTimeElapsed(secondsTotal) {
+        const minutes = Math.floor(secondsTotal / 60);
+        const seconds = secondsTotal % 60;
+        if (minutes > 0) {
+            return `${minutes}m ${seconds}s`;
+        }
+        return `${seconds}s`;
+    },
+
     // NAVIGATION
     showView(viewName) {
-        // Hide all views
         el.viewHome.classList.remove('active');
         el.viewShaft.classList.remove('active');
         el.viewSolve.classList.remove('active');
         el.viewArchive.classList.remove('active');
         el.viewSettings.classList.remove('active');
         
-        // Clear drillin chat interval if moving away from solve
+        // Modal safety
+        this.toggleShaftsModal(false);
+        
+        // Clear Drillin chat pooling if leaving solve view
         if (viewName !== 'solve' && state.drillinChatInterval) {
             clearInterval(state.drillinChatInterval);
             state.drillinChatInterval = null;
+            this.toggleDrillinConsole(false); // Collapsed by default on exit
+        }
+        
+        // Stop timer if leaving solve view
+        if (viewName !== 'solve') {
+            this.stopSolveTimer();
         }
 
-        // Show targets
         if (viewName === 'home') el.viewHome.classList.add('active');
         if (viewName === 'shaft') el.viewShaft.classList.add('active');
         if (viewName === 'solve') el.viewSolve.classList.add('active');
         if (viewName === 'archive') el.viewArchive.classList.add('active');
         if (viewName === 'settings') el.viewSettings.classList.add('active');
         
-        // Scroll to top
         document.querySelector('.app-main').scrollTop = 0;
     },
 
     showHome() {
         this.loadStatus();
         this.showView('home');
+    },
+
+    toggleShaftsModal(show) {
+        if (show) {
+            el.shaftsModal.classList.remove('hidden');
+        } else {
+            el.shaftsModal.classList.add('hidden');
+        }
+    },
+
+    // DRILLIN AI FLOAT PANEL CONTROLS
+    toggleDrillinConsole(show = null) {
+        if (show === true) {
+            el.drillinFloatPanel.classList.remove('hidden');
+        } else if (show === false) {
+            el.drillinFloatPanel.classList.add('hidden');
+        } else {
+            // Toggle
+            el.drillinFloatPanel.classList.toggle('hidden');
+        }
+        
+        // Scroll chat log to bottom if revealed
+        if (!el.drillinFloatPanel.classList.contains('hidden')) {
+            el.drillinChatLog.scrollTop = el.drillinChatLog.scrollHeight;
+        }
     },
 
     // LOAD PROFILE STATS
@@ -169,7 +249,6 @@ const app = {
             state.weeklySolved = data.weekly_solved;
             
             // Update UI Gauges
-            el.headerDepth.innerText = `${state.depth}m`;
             el.headerGems.innerText = `💎 ${state.gems}`;
             
             // Update Badges
@@ -191,7 +270,6 @@ const app = {
                 weeklyBadge.innerText = "UNSOLVED";
             }
             
-            // Character reaction
             this.updateSpeechBubble();
         } catch (err) {
             console.error("Error loading status:", err);
@@ -201,29 +279,28 @@ const app = {
     updateSpeechBubble() {
         let msg = "";
         if (state.dailySolved && state.weeklySolved) {
-            msg = `"Unbelievable, Herr Pariah. The daily quota is extracted and the weekly haul is locked. Your boss won't know what hit him in the board room."`;
+            msg = `"Unbelievable, Herr Pariah. Today's daily ore is loaded and the weekly metrics are verified. Your boss will fall in the line of questioning."`;
         } else if (state.dailySolved) {
-            msg = `"Today's vein is dry. You've dug out your daily ore, but the weekly deep expedition remains waiting. Grab your pick."`;
-        } else if (state.gems < 5) {
-            msg = `"Resource levels are dangerously thin, Pariah. Less than 5 gems! Enter Shaft I or II to extract easy gems, or face logic bankruptcy."`;
-        } else if (state.depth > 100) {
-            msg = `"Over 100 meters deep! That is some serious structural thinking. Let's keep digging before the mental gears freeze up."`;
+            msg = `"Today's vein is dry. Daily challenge successfully completed, but the weekly deep logic expedition remains. Ready to extract?"`;
+        } else if (state.gems < 3) {
+            msg = `"Resource balance depleted, Pariah. Less than 3 gems! You are unable to extract hints. Go to Shaft I to mine gems immediately."`;
         } else {
-            msg = `"Ah, another shift in the mindshaft, Herr Pariah. Let's sharpen the mental pickaxe. Pick a shaft or start the daily challenge!"`;
+            msg = `"Welcome back, Pariah. Select a mineshaft from the menu, or begin the daily challenge. Keep your logic pickaxe sharp!"`;
         }
         el.meinschaftSpeech.innerText = msg;
     },
 
-    // MINESHAFT VIEW
+    // MINESHAFT BANK
     async enterShaft(shaftType) {
         state.activeShaft = shaftType;
+        this.toggleShaftsModal(false);
         
         const shaftNames = {
             "shaft_1": "SHAFT I: COAL MINE (MATH)",
             "shaft_2": "SHAFT II: IRON MINE (METRICS)",
-            "shaft_3": "SHAFT III: GOLD MINE (OPTIMIZATION)",
+            "shaft_3": "SHAFT III: GOLD MINE (OPTIMIZE)",
             "shaft_4": "SHAFT IV: RUBY MINE (LOGIC)",
-            "shaft_5": "SHAFT V: DIAMOND MINE (ROI SCENARIOS)"
+            "shaft_5": "SHAFT V: DIAMOND MINE (FINANCIALS)"
         };
         
         const shaftDescriptions = {
@@ -237,7 +314,6 @@ const app = {
         el.shaftTitle.innerText = shaftNames[shaftType];
         el.shaftDescription.innerText = shaftDescriptions[shaftType];
         
-        // Show loading
         el.shaftQuestions.innerHTML = `<div class="text-muted font-xs">Excavating available sites...</div>`;
         this.showView('shaft');
         
@@ -289,7 +365,6 @@ const app = {
             if (!res.ok) throw new Error(await res.text());
             
             const data = await res.json();
-            // Re-load the shaft list
             this.enterShaft(state.activeShaft);
         } catch (err) {
             alert("Error generating new puzzle: " + err.message);
@@ -299,7 +374,7 @@ const app = {
         }
     },
 
-    // SOLVE PUZZLE VIEW
+    // SOLVE VIEW
     async loadDailyPuzzle() {
         if (!state.dailyPuzzleId) await this.loadStatus();
         this.loadPuzzle(state.dailyPuzzleId);
@@ -313,8 +388,12 @@ const app = {
     async loadPuzzle(puzzleId) {
         this.showView('solve');
         
-        // Reset Inputs
+        // Reset inputs and buttons
         el.userAnswerInput.value = '';
+        el.btnSubmitAnswer.disabled = false;
+        el.btnSubmitAnswer.innerText = "SUBMIT ANSWER";
+        el.userAnswerInput.disabled = false;
+        
         el.solveUnsolvedSection.classList.remove('hidden');
         el.solveSolvedSection.classList.add('hidden');
         el.multipleChoiceContainer.classList.add('hidden');
@@ -322,6 +401,7 @@ const app = {
         el.hintsRevealedList.innerHTML = '';
         el.btnBuyHint.disabled = false;
         el.btnBuyHint.innerText = "🔓 EXTRACT HINT (COSTS 💎 3)";
+        el.hintsCardSection.classList.remove('hidden');
         
         el.puzzleQuestion.innerHTML = `<div class="text-muted font-xs">Reading drill cores...</div>`;
         
@@ -331,16 +411,30 @@ const app = {
             const q = await res.json();
             state.activePuzzle = q;
             
-            // Bind Details
+            // Set details
             el.solveTitle.innerText = q.type.replace('_', ' ').toUpperCase() + ` EXTRACTION`;
             el.puzzleDifficultyTag.innerText = `DIFFICULTY: ${q.type.replace('_', ' ').toUpperCase()}`;
             el.puzzleRewardTag.innerText = `💎 ${q.gem_reward} Gems`;
             el.puzzleQuestion.innerText = q.question_text;
-            el.solveAttempts.innerText = `Attempts: ${q.status_info.attempts || 0}`;
             
-            // Check status (Solved / Unsolved)
+            const maxAtt = q.max_attempts;
+            const currentAttempts = q.status_info.attempts || 0;
+            
+            el.solveAttempts.innerText = `Attempts: ${currentAttempts} / ${maxAtt}`;
+            
+            // Set Scratchpad workspace draft notes
+            el.solveScratchpadInput.value = q.status_info.user_notes || '';
+            el.scratchpadSavedBadge.classList.add('hidden');
+            
+            // Start timer
+            this.startSolveTimer();
+
+            // Check attempts and status
             if (q.status_info.status === 'solved') {
                 this.showSolvedState(q);
+            } else if (currentAttempts >= maxAtt) {
+                // Collapsed due to max attempts
+                this.showCollapsedState(q);
             } else {
                 // Setup Input Panel
                 if (q.answer_type === 'multiple_choice' && q.choices) {
@@ -348,7 +442,7 @@ const app = {
                     el.multipleChoiceContainer.innerHTML = '';
                     const choices = typeof q.choices === 'string' ? JSON.parse(q.choices) : q.choices;
                     choices.forEach(c => {
-                        const optLetter = c.charAt(0); // 'A', 'B', 'C', 'D'
+                        const optLetter = c.charAt(0); // 'A', 'B' etc
                         const btn = document.createElement('button');
                         btn.className = 'pixel-btn red-glow';
                         btn.innerText = c;
@@ -359,14 +453,14 @@ const app = {
                     el.textInputContainer.classList.remove('hidden');
                 }
                 
-                // Show unlocked hints
+                // Show hints
                 this.renderHints(q.hints, q.status_info.hints_revealed);
             }
             
-            // Draw Chart
+            // Render Chart
             this.renderChart(q.chart_data);
             
-            // Drillin Terminal Status
+            // Drillin Terminal connection check
             this.updateDrillinConsole(q.status_info.drillin_active);
             
         } catch (err) {
@@ -390,38 +484,69 @@ const app = {
         try {
             const config = typeof chartDataStr === 'string' ? JSON.parse(chartDataStr) : chartDataStr;
             
-            // Retro theme injection override
+            // Overriding chart configuration for high legibility and color contrast!
+            const distinctBorders = ['#ff2a4b', '#ffd700', '#00e5ff', '#39ff14', '#e040fb', '#ff9100'];
+            const distinctBacks = [
+                'rgba(255, 42, 75, 0.3)', 
+                'rgba(255, 215, 0, 0.3)', 
+                'rgba(0, 229, 255, 0.3)', 
+                'rgba(57, 255, 20, 0.3)', 
+                'rgba(224, 64, 251, 0.3)', 
+                'rgba(255, 145, 0, 0.3)'
+            ];
+
             if (config.data && config.data.datasets) {
                 config.data.datasets.forEach(ds => {
-                    ds.borderWidth = ds.borderWidth || 3;
-                    // Inject pixel style colors if undefined
-                    if (!ds.borderColor && !ds.backgroundColor) {
-                        ds.borderColor = '#ff2a4b';
-                        ds.backgroundColor = 'rgba(128, 0, 16, 0.1)';
+                    ds.borderWidth = 3;
+                    
+                    if (config.type === 'pie' || config.type === 'doughnut') {
+                        // Apply separate vibrant contrasting colors to each slice
+                        ds.borderColor = '#111111';
+                        ds.backgroundColor = distinctBorders.slice(0, ds.data.length);
+                    } else {
+                        // Line/Bar charts
+                        ds.borderColor = ds.borderColor || '#ff2a4b';
+                        ds.backgroundColor = ds.backgroundColor || 'rgba(255, 42, 75, 0.15)';
                     }
                 });
             }
             
-            // Set font overrides
+            // Adjust options for high contrast
             if (!config.options) config.options = {};
+            
+            // Enable ticks styling
             config.options.scales = config.options.scales || {};
             
             const fontConfig = {
                 family: 'VT323',
-                size: 14
+                size: 16
             };
             
-            // Configure ticks to look retro
-            ['x', 'y'].forEach(axis => {
-                if (!config.options.scales[axis]) config.options.scales[axis] = {};
-                config.options.scales[axis].ticks = config.options.scales[axis].ticks || {};
-                config.options.scales[axis].ticks.font = fontConfig;
-                config.options.scales[axis].ticks.color = '#aaaaaa';
-                config.options.scales[axis].grid = {
-                    color: '#2a0407'
-                };
-            });
+            // Retain axis settings
+            if (config.type !== 'pie' && config.type !== 'doughnut') {
+                ['x', 'y'].forEach(axis => {
+                    if (!config.options.scales[axis]) config.options.scales[axis] = {};
+                    config.options.scales[axis].ticks = config.options.scales[axis].ticks || {};
+                    config.options.scales[axis].ticks.font = fontConfig;
+                    config.options.scales[axis].ticks.color = '#ffffff'; // White ticks
+                    config.options.scales[axis].grid = {
+                        color: '#4a040b' // Dark red grid
+                    };
+                });
+            }
             
+            // Chart titles/legends high visibility
+            if (!config.options.plugins) config.options.plugins = {};
+            config.options.plugins.legend = config.options.plugins.legend || {};
+            config.options.plugins.legend.labels = {
+                color: '#ffffff',
+                font: { family: 'VT323', size: 16 }
+            };
+            
+            config.options.plugins.title = config.options.plugins.title || {};
+            config.options.plugins.title.color = '#ff2a4b';
+            config.options.plugins.title.font = { family: 'VT323', size: 20 };
+
             const ctx = el.puzzleChart.getContext('2d');
             state.currentChart = new Chart(ctx, config);
         } catch (e) {
@@ -457,14 +582,17 @@ const app = {
         
         try {
             const res = await fetch(`/api/puzzle/${state.activePuzzle.id}/hint`, { method: 'POST' });
-            if (!res.ok) throw new Error(await res.text());
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Server error");
+            }
             const data = await res.json();
             
-            // Update gems
             state.gems = data.gems;
             el.headerGems.innerText = `💎 ${state.gems}`;
             
-            // Refresh hints list
+            // Re-render
+            state.activePuzzle.status_info.hints_revealed = data.hints_revealed;
             this.renderHints(data.hints, data.hints_revealed);
             
         } catch (err) {
@@ -487,92 +615,128 @@ const app = {
                 body: JSON.stringify({ answer: answer })
             });
             
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Server error");
+            }
+            
             const data = await res.json();
             
+            // Stop Timer
+            this.stopSolveTimer();
+            const timeFormatted = this.formatTimeElapsed(state.solveSecondsElapsed);
+
             if (data.correct) {
-                // Correct logic!
                 state.gems = data.gems;
                 state.depth = data.depth_meters;
                 
                 el.headerGems.innerText = `💎 ${state.gems}`;
-                el.headerDepth.innerText = `${state.depth}m`;
                 
-                // Show Solved State
                 state.activePuzzle.status_info.status = 'solved';
                 state.activePuzzle.explanation = data.explanation;
                 state.activePuzzle.status_info.user_answer = answer;
                 
-                this.showSolvedState(state.activePuzzle);
+                // Show Solved UI
+                el.solveUnsolvedSection.classList.add('hidden');
+                el.solveSolvedSection.classList.remove('hidden');
+                el.hintsCardSection.classList.add('hidden');
                 
-                // Refresh Status (for streak checks)
+                el.solveGemsRewarded.innerText = `+${state.activePuzzle.gem_reward} Gems`;
+                el.solveTimeTaken.innerText = `Solved in ${timeFormatted}`;
+                el.solveExplanation.innerText = data.explanation;
+                
+                el.meinschaftSpeech.innerText = `"Elegantly extracted in ${timeFormatted}! Your logic pickaxe is lethal. Save your final scratchpad notes now!"`;
+                
+                // Save workspace notes to final database entry
+                this.saveScratchpadDraft(true);
+                
+                if (state.activePuzzle.status_info.drillin_active === 1) {
+                    this.updateDrillinConsole(1);
+                    this.sendDrillinSystemMessage(`*** SYSTEM: User solved the puzzle successfully in ${timeFormatted}. Drillin review requested. ***`);
+                }
+                
                 this.loadStatus();
             } else {
-                // Wrong answer - Balatro Screen Shake effect!
-                const ws = document.querySelector('.solve-workspace');
+                // Screen shake animation
+                const ws = document.querySelector('.solve-workspace-full');
                 ws.classList.add('shake-screen');
                 setTimeout(() => ws.classList.remove('shake-screen'), 300);
                 
                 // Update attempts
                 const currentAttempts = (state.activePuzzle.status_info.attempts || 0) + 1;
                 state.activePuzzle.status_info.attempts = currentAttempts;
-                el.solveAttempts.innerText = `Attempts: ${currentAttempts}`;
+                const maxAtt = state.activePuzzle.max_attempts;
                 
-                // Speech bubble reaction
-                el.meinschaftSpeech.innerText = `"Ah! A structural collapse of logic! Re-read the constraints, Pariah, or consult Drillin."`;
+                el.solveAttempts.innerText = `Attempts: ${currentAttempts} / ${maxAtt}`;
+                
+                if (currentAttempts >= maxAtt) {
+                    this.showCollapsedState(state.activePuzzle);
+                } else {
+                    el.meinschaftSpeech.innerText = `"Ah! A structural collapse of logic! Attempts remaining: ${maxAtt - currentAttempts}."`;
+                }
             }
         } catch (err) {
-            alert("Error submitting answer: " + err.message);
+            alert("Submission error: " + err.message);
         }
     },
 
     showSolvedState(q) {
         el.solveUnsolvedSection.classList.add('hidden');
         el.solveSolvedSection.classList.remove('hidden');
-        el.hintsCardSection.classList.add('hidden'); // Hide hint section once solved
+        el.hintsCardSection.classList.add('hidden');
         
-        el.solveGemsRewarded.innerText = `+${q.gem_reward} Gems, Depth Increased`;
+        el.solveGemsRewarded.innerText = `+${q.gem_reward} Gems`;
+        el.solveTimeTaken.innerText = `Status: Solved`;
         el.solveExplanation.innerText = q.explanation;
         
-        // Show saved notes if they exist
-        el.solveUserNotes.value = q.status_info.user_notes || '';
+        el.meinschaftSpeech.innerText = `"Site completed. Your analytical reflections are documented in the archive."`;
         
-        el.meinschaftSpeech.innerText = `"Elegantly extracted! Your brain cells are firing. Make sure to record your approach in the archive notes."`;
-        
-        // If Drillin is active, we can refresh his panel to review notes
         if (q.status_info.drillin_active === 1) {
             this.updateDrillinConsole(1);
         }
     },
 
-    async saveNotes() {
-        const notes = el.solveUserNotes.value.trim();
+    showCollapsedState(q) {
+        el.solveUnsolvedSection.classList.remove('hidden');
+        el.solveSolvedSection.classList.add('hidden');
+        
+        // Disable submission inputs
+        el.btnSubmitAnswer.disabled = true;
+        el.btnSubmitAnswer.innerText = "MINESHAFT COLLAPSED";
+        el.userAnswerInput.disabled = true;
+        
+        // Hide multiple choices if present
+        el.multipleChoiceContainer.classList.add('hidden');
+        
+        el.solveAttempts.innerHTML = `<span class="text-red">Attempts: ${q.status_info.attempts} / ${q.max_attempts} (COLLAPSED!)</span>`;
+        el.meinschaftSpeech.innerText = `"Mineshaft collapsed! Max attempts reached. You must abandon this shift."`;
+    },
+
+    // WORKSPACE notes draft save
+    async saveScratchpadDraft(silent = false) {
+        const text = el.solveScratchpadInput.value.trim();
         try {
             const res = await fetch(`/api/puzzle/${state.activePuzzle.id}/notes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ notes: notes })
+                body: JSON.stringify({ notes: text })
             });
             if (res.ok) {
-                alert("Reflection committed to the archive!");
-                // If Drillin is connected, prompt him to analyze their notes!
-                if (state.activePuzzle.status_info.drillin_active === 1) {
-                    this.sendDrillinSystemMessage("*** SYSTEM: User saved new approach notes. Drillin review requested. ***");
+                if (!silent) {
+                    el.scratchpadSavedBadge.classList.remove('hidden');
+                    setTimeout(() => {
+                        el.scratchpadSavedBadge.classList.add('hidden');
+                    }, 1500);
                 }
+                // Update active state notes
+                state.activePuzzle.status_info.user_notes = text;
             }
         } catch (err) {
-            alert("Error saving notes: " + err.message);
+            console.error("Error saving scratchpad draft: ", err);
         }
     },
 
-    abandonPuzzle() {
-        if (state.activeShaft) {
-            this.enterShaft(state.activeShaft);
-        } else {
-            this.showHome();
-        }
-    },
-
-    // DRILLIN CHATBOT TERMINAL
+    // DRILLIN TERMINAL CHATBOT
     updateDrillinConsole(active) {
         if (active === 1) {
             el.drillinStatusTag.innerText = "ONLINE";
@@ -582,8 +746,6 @@ const app = {
             
             // Load messages
             this.loadDrillinMessages();
-            
-            // Poll for messages if needed (just load once and on sends is usually enough, but let's refresh when we open)
         } else {
             el.drillinStatusTag.innerText = "OFFLINE";
             el.drillinStatusTag.className = "blink text-red";
@@ -610,7 +772,6 @@ const app = {
             if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
             
-            // Deduct gems locally
             state.gems = data.gems;
             el.headerGems.innerText = `💎 ${state.gems}`;
             
@@ -643,7 +804,6 @@ const app = {
                 el.drillinChatLog.appendChild(bubble);
             });
             
-            // Scroll to bottom
             el.drillinChatLog.scrollTop = el.drillinChatLog.scrollHeight;
         } catch (err) {
             console.error("Error loading chat messages:", err);
@@ -663,10 +823,10 @@ const app = {
         el.drillinChatLog.appendChild(userBubble);
         el.drillinChatLog.scrollTop = el.drillinChatLog.scrollHeight;
         
-        // Append pending typing message
+        // Typing bubble
         const typingBubble = document.createElement('div');
         typingBubble.className = 'drillin-chat-bubble';
-        typingBubble.innerHTML = `<strong>Drillin:</strong> <em>Extracting data...</em>`;
+        typingBubble.innerHTML = `<strong>Drillin:</strong> <em>Extracting response...</em>`;
         el.drillinChatLog.appendChild(typingBubble);
         el.drillinChatLog.scrollTop = el.drillinChatLog.scrollHeight;
         
@@ -679,18 +839,18 @@ const app = {
             
             const reply = await res.json();
             
-            // Replace typing bubble with actual reply
+            // Replace typing bubble
             typingBubble.innerHTML = `<strong>Drillin:</strong> ${reply.message}`;
             el.drillinChatLog.scrollTop = el.drillinChatLog.scrollHeight;
             
         } catch (err) {
-            typingBubble.innerHTML = `<span class="text-red">Connection error to Drillin node.</span>`;
+            typingBubble.innerHTML = `<span class="text-red">Connection timed out.</span>`;
         }
     },
 
     async sendDrillinSystemMessage(sysMsg) {
         try {
-            const res = await fetch(`/api/puzzle/${state.activePuzzle.id}/drillin/chat`, {
+            await fetch(`/api/puzzle/${state.activePuzzle.id}/drillin/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: sysMsg })
@@ -709,6 +869,20 @@ const app = {
         try {
             const res = await fetch('/api/archive');
             const data = await res.json();
+            
+            // Aggregate scorecard data
+            // Depth map for analytics: Coal=2m, Iron/Daily=5m, Gold=10m, Ruby/Weekly=15m, Diamond=25m
+            let totalDepth = 0;
+            const depthMap = {"shaft_1": 2, "shaft_2": 5, "daily": 5, "shaft_3": 10, "shaft_4": 15, "weekly": 15, "shaft_5": 25};
+            
+            data.forEach(item => {
+                totalDepth += depthMap[item.type] || 5;
+            });
+            
+            // Update Scorecard HTML
+            el.scorecardSolvedCount.innerText = data.length;
+            el.scorecardDepth.innerText = `${totalDepth}m`;
+            el.scorecardGems.innerText = state.gems;
             
             if (data.length === 0) {
                 el.archiveListContainer.innerHTML = `<div class="text-muted font-sm title-center">Archive is currently empty. Extract a site successfully to store records.</div>`;
@@ -776,14 +950,12 @@ const app = {
     toggleMusic() {
         const isMuted = localStorage.getItem('bgm_enabled') === 'true';
         if (isMuted) {
-            // Mute it
             localStorage.setItem('bgm_enabled', 'false');
             bgm.pause();
             el.musicBtn.classList.remove('text-green');
             el.musicBtn.classList.add('text-red');
             el.musicBtn.innerText = "🎵 OFF";
         } else {
-            // Unmute it
             localStorage.setItem('bgm_enabled', 'true');
             bgm.play().then(() => {
                 el.musicBtn.classList.remove('text-red');
@@ -800,21 +972,8 @@ const app = {
         localStorage.setItem('bgm_volume', val);
     },
 
-    toggleCRT() {
-        const isCrt = localStorage.getItem('crt_enabled') === 'true';
-        if (isCrt) {
-            localStorage.setItem('crt_enabled', 'false');
-            document.querySelector('.scanlines').classList.add('hidden');
-            document.querySelector('.crt-overlay').classList.add('hidden');
-        } else {
-            localStorage.setItem('crt_enabled', 'true');
-            document.querySelector('.scanlines').classList.remove('hidden');
-            document.querySelector('.crt-overlay').classList.remove('hidden');
-        }
-    },
-
     async resetProgress() {
-        if (!confirm("Are you absolutely sure you want to trigger a cave-in? This resets all solved puzzle counts, depth records, custom notes, and returns gems to 17. This cannot be undone!")) {
+        if (!confirm("Are you absolutely sure you want to trigger a cave-in? This resets all solved puzzle counts, depth records, custom notes, and resets gems to 0. This cannot be undone!")) {
             return;
         }
         
@@ -825,10 +984,9 @@ const app = {
             state.depth = data.depth_meters;
             state.gems = data.gems;
             
-            el.headerDepth.innerText = `${state.depth}m`;
             el.headerGems.innerText = `💎 ${state.gems}`;
             
-            alert("Progress reset completed. The mineshafts have collapsed and re-seeded.");
+            alert("Progress reset completed. The mineshafts have collapsed and gems are reset to 0.");
             this.showHome();
         } catch (err) {
             alert("Error resetting progress: " + err.message);

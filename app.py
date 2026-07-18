@@ -1,9 +1,22 @@
 from flask import Flask, jsonify, request, render_template
 import os
+import json
 import db
 import generator
 from datetime import datetime
 from dotenv import load_dotenv
+
+def get_max_attempts(puzzle_type):
+    mapping = {
+        "shaft_1": 9,
+        "shaft_2": 8,
+        "daily": 8,
+        "shaft_3": 7,
+        "shaft_4": 6,
+        "weekly": 6,
+        "shaft_5": 5
+    }
+    return mapping.get(puzzle_type, 9)
 
 load_dotenv()
 
@@ -104,6 +117,8 @@ def get_puzzle(puzzle_id):
         puzzle = db.get_puzzle_detail(puzzle_id)
         if not puzzle:
             return jsonify({"error": "Puzzle not found"}), 404
+        # Inject max_attempts
+        puzzle["max_attempts"] = get_max_attempts(puzzle["type"])
         return jsonify(puzzle)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -220,10 +235,29 @@ def submit_answer(puzzle_id):
         if not user_answer:
             return jsonify({"error": "Answer cannot be empty"}), 400
             
+        # Enforce max attempts logic
+        conn = db.get_db()
+        status_row = conn.execute('SELECT attempts, status FROM user_puzzle_status WHERE puzzle_id = ?', (puzzle_id,)).fetchone()
+        puzzle_row = conn.execute('SELECT type FROM puzzles WHERE id = ?', (puzzle_id,)).fetchone()
+        conn.close()
+        
+        if puzzle_row:
+            max_att = get_max_attempts(puzzle_row['type'])
+            if status_row:
+                if status_row['status'] == 'solved':
+                    return jsonify({"error": "This puzzle is already solved!"}), 400
+                if status_row['attempts'] >= max_att:
+                    return jsonify({"error": f"Max attempts ({max_att}) reached! This site has collapsed."}), 400
+            
         res = db.submit_answer_db(puzzle_id, user_answer)
         profile = db.get_user_profile()
         res["gems"] = profile["gems"]
         res["depth_meters"] = profile["depth_meters"]
+        
+        # Add max attempts info to the response
+        if puzzle_row:
+            res["max_attempts"] = get_max_attempts(puzzle_row['type'])
+            
         return jsonify(res)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -251,8 +285,8 @@ def reset_progress():
     try:
         conn = db.get_db()
         cursor = conn.cursor()
-        # Reset profile
-        cursor.execute('UPDATE user_profile SET gems = 17, depth_meters = 0, last_active = NULL WHERE id = 1')
+        # Reset profile - gem balance 0 on reset!
+        cursor.execute('UPDATE user_profile SET gems = 0, depth_meters = 0, last_active = NULL WHERE id = 1')
         # Clear status & chat tables
         cursor.execute('DELETE FROM user_puzzle_status')
         cursor.execute('DELETE FROM drillin_messages')
@@ -269,7 +303,7 @@ def reset_progress():
         except Exception:
             pass
             
-        return jsonify({"status": "success", "gems": 17, "depth_meters": 0})
+        return jsonify({"status": "success", "gems": 0, "depth_meters": 0})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
