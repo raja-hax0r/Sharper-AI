@@ -1032,3 +1032,21 @@ body.home-active .home-panel {
     padding: 1rem 0;
     position: relative;
 }
+
+/* Fade to black overlay for mine transition */
+.fade-black-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #000000;
+    z-index: 99999;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+}
+.fade-black-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}

@@ -18,7 +18,7 @@
     <div class="app-container">
         <!-- Persistent App Header -->
         <header class="app-header">
-            <div class="header-logo" onclick="app.showHome()">
+            <div class="header-logo" onclick="app.confirmGoHome()">
                 <span class="logo-pixel">⛏️</span>
                 <h1 class="pixel-text">PARIAH'S MINESHAFT</h1>
             </div>
@@ -34,8 +34,8 @@
                     <button id="music-btn" class="pixel-btn-sm text-red">🎵 OFF</button>
                 </div>
                 <!-- Navigation Icons -->
-                <button class="pixel-btn-icon" title="Cognitive Archive" onclick="app.showArchive()">📚</button>
-                <button class="pixel-btn-icon" title="Mineshaft Settings" onclick="app.showSettings()">⚙️</button>
+                <button class="pixel-btn-icon" title="Cognitive Archive" onclick="app.confirmGoArchive()">📚</button>
+                <button class="pixel-btn-icon" title="Mineshaft Settings" onclick="app.confirmGoSettings()">⚙️</button>
             </div>
         </header>
 
@@ -167,7 +167,7 @@
             <!-- VIEW 3: SOLVE PUZZLE -->
             <section id="view-solve" class="view-section">
                 <div class="section-nav">
-                    <button class="pixel-btn-sm" onclick="app.abandonPuzzle()">◀ ABANDON SHIFT</button>
+                    <button class="pixel-btn-sm" onclick="app.confirmAbandon()">◀ ABANDON SHIFT</button>
                     <h2 id="solve-title" class="pixel-text text-red">EXTRACTION SITE</h2>
                     <!-- Timer -->
                     <div class="solve-header-timer">
@@ -363,6 +363,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Fade to black overlay -->
+    <div id="fade-black-overlay" class="fade-black-overlay hidden"></div>
 
     <!-- Script imports -->
     <script src="/static/app.js"></script>

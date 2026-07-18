@@ -83,6 +83,17 @@ const el = {
 // AUDIO BGM
 const bgm = document.getElementById('bgm');
 let bgmInitialized = false;
+const solveTracks = [
+    "Captain Claw - Level 01 Music.mp3",
+    "Captain Claw - Level 03 Music.mp3",
+    "Captain Claw - Level 04 Music.mp3",
+    "Captain Claw - Level 08 Music.mp3",
+    "Captain Claw - Level 10 Music.mp3",
+    "Captain Claw - Level 11 Music.mp3",
+    "Captain Claw - Level 12 Music.mp3",
+    "Captain Claw - Level 13 Music.mp3",
+    "Captain Claw - Level 14 Music.mp3"
+];
 
 // INITIALIZE APP
 document.addEventListener('DOMContentLoaded', () => {
@@ -112,6 +123,13 @@ const app = {
         const volume = localStorage.getItem('bgm_volume') || '0.5';
         bgm.volume = parseFloat(volume);
         el.volumeSlider.value = volume;
+
+        // Track end listener for solve playlist cycling
+        bgm.onended = () => {
+            if (state.inSolveMode) {
+                this.playRandomSolveTrack();
+            }
+        };
 
         if (musicEnabled) {
             el.musicBtn.classList.remove('text-red');
@@ -214,6 +232,89 @@ const app = {
     showHome() {
         this.loadStatus();
         this.showView('home');
+    },
+
+    confirmGoHome() {
+        this.exitMineFlow(() => this.showHome());
+    },
+
+    confirmGoArchive() {
+        this.exitMineFlow(() => this.showArchive());
+    },
+
+    confirmGoSettings() {
+        this.exitMineFlow(() => this.showSettings());
+    },
+
+    confirmAbandon() {
+        this.exitMineFlow(() => this.enterShaft(state.activeShaft || 'shaft_1'));
+    },
+
+    exitMineFlow(actionCallback) {
+        if (state.activePuzzle && state.activePuzzle.status_info.status !== 'solved') {
+            if (!confirm("Are you sure you want to exit the mine? Progress in this shift will be abandoned.")) {
+                return;
+            }
+            
+            const overlay = document.getElementById('fade-black-overlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                overlay.offsetHeight; // Force layout reflow
+                overlay.classList.add('active');
+            }
+            
+            const startVolume = bgm.volume;
+            let fadeTicks = 0;
+            const fadeInterval = setInterval(() => {
+                fadeTicks++;
+                bgm.volume = Math.max(0, startVolume * (1 - fadeTicks / 10));
+                if (fadeTicks >= 10) {
+                    clearInterval(fadeInterval);
+                    bgm.pause();
+                    
+                    state.inSolveMode = false;
+                    bgm.src = "/static/bgm3.wav";
+                    bgm.loop = true;
+                    bgm.volume = parseFloat(localStorage.getItem('bgm_volume') || '0.5');
+                    
+                    state.activePuzzle = null;
+                    actionCallback();
+                    
+                    setTimeout(() => {
+                        if (overlay) {
+                            overlay.classList.remove('active');
+                            setTimeout(() => overlay.classList.add('hidden'), 600);
+                        }
+                        if (localStorage.getItem('bgm_enabled') === 'true') {
+                            bgm.play().catch(e => console.log("BGM play blocked:", e));
+                        }
+                    }, 200);
+                }
+            }, 50);
+        } else {
+            state.inSolveMode = false;
+            if (state.activePuzzle) {
+                bgm.src = "/static/bgm3.wav";
+                bgm.loop = true;
+                if (localStorage.getItem('bgm_enabled') === 'true') {
+                    bgm.play().catch(e => console.log(e));
+                }
+                state.activePuzzle = null;
+            }
+            actionCallback();
+        }
+    },
+
+    playRandomSolveTrack() {
+        const available = solveTracks.filter(t => t !== state.lastSolveTrack);
+        const track = available[Math.floor(Math.random() * available.length)];
+        state.lastSolveTrack = track;
+        
+        bgm.src = "/static/" + encodeURIComponent(track);
+        bgm.loop = false;
+        if (localStorage.getItem('bgm_enabled') === 'true') {
+            bgm.play().catch(e => console.log("Solve track play blocked:", e));
+        }
     },
 
     toggleShaftsModal(show) {
@@ -435,6 +536,10 @@ const app = {
             
             // Start timer
             this.startSolveTimer();
+
+            // Switch audio to solve playlist!
+            state.inSolveMode = true;
+            this.playRandomSolveTrack();
 
             // Check attempts and status
             if (q.status_info.status === 'solved') {
