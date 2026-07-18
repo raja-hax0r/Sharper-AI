@@ -488,6 +488,12 @@ const app = {
         
         el.puzzleVisualCard.classList.remove('hidden');
         
+        // Reset toggle state to collapsed
+        const container = document.getElementById('puzzle-chart-container');
+        const btn = document.getElementById('btn-toggle-chart');
+        if (container) container.classList.add('hidden');
+        if (btn) btn.innerText = "👁️ SHOW CHART";
+        
         try {
             const config = typeof chartDataStr === 'string' ? JSON.parse(chartDataStr) : chartDataStr;
             
@@ -559,6 +565,18 @@ const app = {
         } catch (e) {
             console.error("Error drawing Chart.js:", e);
             el.puzzleVisualCard.classList.add('hidden');
+        }
+    },
+
+    toggleChart() {
+        const container = document.getElementById('puzzle-chart-container');
+        const btn = document.getElementById('btn-toggle-chart');
+        if (container.classList.contains('hidden')) {
+            container.classList.remove('hidden');
+            btn.innerText = "🙈 HIDE CHART";
+        } else {
+            container.classList.add('hidden');
+            btn.innerText = "👁️ SHOW CHART";
         }
     },
 

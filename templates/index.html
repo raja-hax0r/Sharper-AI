@@ -234,10 +234,11 @@
                     <div class="solve-right-panel">
                         <!-- Graphical Display (Larger space now) -->
                         <div id="puzzle-visual-card" class="visual-card">
-                            <div class="visual-header">
+                            <div class="visual-header" style="display: flex; justify-content: space-between; align-items: center;">
                                 <span class="pixel-text font-xs text-red">📊 DATA INTERPRETATION CHART</span>
+                                <button id="btn-toggle-chart" class="pixel-btn-sm text-gold" onclick="app.toggleChart()">👁️ SHOW CHART</button>
                             </div>
-                            <div class="chart-container-large">
+                            <div id="puzzle-chart-container" class="chart-container-large hidden">
                                 <canvas id="puzzle-chart"></canvas>
                             </div>
                         </div>

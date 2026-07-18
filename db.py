@@ -88,446 +88,268 @@ def seed_puzzles(cursor):
     
     puzzles_seed = [
         # ==========================================
-        # SHAFT 1 (COAL): Quick Business Math (2 Gems)
+        # SHAFT 1 (COAL): CAT QUANT PUZZLES
         # ==========================================
         {
             "type": "shaft_1",
-            "question_text": "Your team runs a manual weekly report that takes 4 hours of senior developer time, costing $75/hour. You write an automation script that takes 6 hours to build (one-time developer cost of $75/hour) and costs $10/week in server run-time. How many weeks until this script breaks even on cost? (Provide only the integer number of weeks)",
+            "question_text": "Jayant bought a certain number of white shirts at the rate of Rs. 1000 per piece and a certain number of blue shirts at the rate of Rs. 1125 per piece. For each shirt, he then set a fixed market price which was 25% higher than the average cost of all the shirts. He sold all the shirts at a discount of 10% and made a total profit of Rs. 51000. If he bought both colors of shirts, what is the maximum possible total number of shirts that he could have bought? (Provide only the integer value)",
             "answer_type": "numeric",
             "choices": None,
-            "exact_answer": "2",
-            "explanation": "Manual cost per week = 4 hours * $75/hour = $300.\nAutomation cost per week = $10.\nWeekly savings = $300 - $10 = $290.\nOne-time script development cost = 6 hours * $75/hour = $450.\nBreak-even weeks = $450 / $290 = 1.55 weeks. Since we ask for the number of weeks to achieve full break-even (i.e. savings exceed cost), it will be 2 weeks.",
+            "exact_answer": "407",
+            "explanation": "Let white shirts = x, blue shirts = y. Total Cost Price (CP) = 1000x + 1125y.\nTotal Market Price (MP) = 1.25 * (1000x + 1125y).\nTotal Selling Price (SP) = 0.9 * MP = 1.125 * (1000x + 1125y).\nProfit = SP - CP = 0.125 * (1000x + 1125y) = 51000.\nSo 1000x + 1125y = 408000 -> 8x + 9y = 3264.\ny = 8 * (408 - x) / 9. y must be a multiple of 8.\nTo maximize total shirts (x + y), we want to minimize individual shirt prices. 4a (average cost) must be minimized. From constraints, we get n < 408, so maximum possible total shirts n = 407.",
             "hints": json.dumps([
-                "First calculate how much you spend weekly on the manual report.",
-                "Calculate the total development cost of the script ($75 * 6) and the weekly savings ($300 - $10).",
-                "Divide development cost by weekly savings. Round up to the next integer since the break-even occurs during that week."
+                "Express average cost and profit in terms of white shirts x and blue shirts y.",
+                "Simplify the profit equation to get a linear relationship: 8x + 9y = 3264.",
+                "Since x and y must be positive integers, find the boundary limits that maximize the sum x + y. This yields a maximum of 407."
             ]),
             "gem_reward": 2,
-            "chart_data": json.dumps({
-                "type": "line",
-                "data": {
-                    "labels": ["Week 0", "Week 1", "Week 2", "Week 3", "Week 4"],
-                    "datasets": [
-                        {
-                            "label": "Manual Reporting Cumulative Cost ($)",
-                            "data": [0, 300, 600, 900, 1200],
-                            "borderColor": "#800010",
-                            "backgroundColor": "rgba(128, 0, 16, 0.1)",
-                            "fill": True,
-                            "tension": 0.1
-                        },
-                        {
-                            "label": "Automated Script Cumulative Cost ($)",
-                            "data": [450, 460, 470, 480, 490],
-                            "borderColor": "#e0115f",
-                            "backgroundColor": "rgba(224, 17, 95, 0.1)",
-                            "fill": True,
-                            "tension": 0.1
-                        }
-                    ]
-                },
-                "options": {
-                    "responsive": True,
-                    "plugins": {
-                        "title": {
-                            "display": True,
-                            "text": "Cumulative Cost: Manual vs. Automated"
-                        }
-                    }
-                }
-            })
+            "chart_data": None
         },
         {
             "type": "shaft_1",
-            "question_text": "An API provider offers a plan for $80/month flat, which includes 20,000 requests. Extra requests cost $0.005 each. Another plan is purely pay-as-you-go, charging $0.008 per request with no monthly base. At what number of monthly API requests do both plans cost exactly the same?",
+            "question_text": "Let n and m be two positive integers such that there are exactly 41 integers greater than 8^m and less than 8^n, which can be expressed as powers of 2. Then, what is the smallest possible value of n + m? (Provide only the integer value)",
             "answer_type": "numeric",
             "choices": None,
-            "exact_answer": "10000",
-            "explanation": "Let R be the number of requests.\nPay-as-you-go cost = 0.008 * R.\nFlat plan cost (for R <= 20,000) = $80.\nSetting them equal: 0.008 * R = 80 => R = 80 / 0.008 = 10,000.\nSince 10,000 is less than 20,000, the flat rate is indeed just $80, and the two plans intersect at exactly 10,000 requests.",
+            "exact_answer": "16",
+            "explanation": "8^m = 2^(3m) and 8^n = 2^(3n).\nPowers of 2 between them are 2^(3m+1), 2^(3m+2), ..., 2^(3n-1).\nThe number of powers is (3n - 1) - (3m + 1) + 1 = 3n - 3m - 1.\nWe are given 3n - 3m - 1 = 41 -> 3(n - m) = 42 -> n - m = 14.\nSince m and n are positive integers, the smallest values are m = 1 and n = 15.\nHence, the smallest value of n + m = 1 + 15 = 16.",
             "hints": json.dumps([
-                "Set up the algebraic equation where pay-as-you-go cost matches the base rate of the flat plan.",
-                "Verify if the intersection request count is within the flat plan's free limit of 20,000.",
-                "Solve 0.008 * R = 80. R is your target number."
+                "Rewrite 8^m and 8^n as base-2 powers, which are 2^(3m) and 2^(3n).",
+                "Formulate the number of integers that are powers of 2 strictly between 2^(3m) and 2^(3n). That is: 3n - 3m - 1 = 41.",
+                "Solve for n - m = 14. Since they must be positive integers, set m = 1 and n = 15 to minimize n + m."
             ]),
             "gem_reward": 2,
-            "chart_data": json.dumps({
-                "type": "line",
-                "data": {
-                    "labels": [0, 5000, 10000, 15000, 20000],
-                    "datasets": [
-                        {
-                            "label": "Flat Plan ($)",
-                            "data": [80, 80, 80, 80, 80],
-                            "borderColor": "#e0115f",
-                            "fill": False
-                        },
-                        {
-                            "label": "Pay-As-You-Go ($)",
-                            "data": [0, 40, 80, 120, 160],
-                            "borderColor": "#FFD700",
-                            "fill": False
-                        }
-                    ]
-                },
-                "options": {
-                    "responsive": True,
-                    "plugins": {
-                        "title": {
-                            "display": True,
-                            "text": "Plan Comparison Cost Intersect"
-                        }
-                    }
-                }
-            })
+            "chart_data": None
         },
-        
+        {
+            "type": "shaft_1",
+            "question_text": "Suppose f(x, y) is a real valued function such that f(3x + 2y, 2x - 5y) = 19x, for all real numbers x and y. What is the value of x for which f(x, 2x) = 27? (Provide only the integer value)",
+            "answer_type": "numeric",
+            "choices": None,
+            "exact_answer": "3",
+            "explanation": "We need to express f(A, B) = 19x in terms of A and B.\nLet A = 3x + 2y and B = 2x - 5y.\nMultiplying A by 5: 5A = 15x + 10y.\nMultiplying B by 2: 2B = 4x - 10y.\nAdding them: 5A + 2B = 19x.\nThus f(A, B) = 5A + 2B.\nNow, we need f(x, 2x) = 27.\nHere, A = x and B = 2x.\nSo f(x, 2x) = 5(x) + 2(2x) = 9x = 27.\nThus x = 3.",
+            "hints": json.dumps([
+                "Eliminate y by combining the two variables A = 3x + 2y and B = 2x - 5y.",
+                "See how 5A + 2B relates directly to 19x.",
+                "Substitute A = x and B = 2x into the function rule 5A + 2B = 27, and solve for x."
+            ]),
+            "gem_reward": 2,
+            "chart_data": None
+        },
         # ==========================================
-        # SHAFT 2 (IRON): Data Interpretation & Metrics (5 Gems)
+        # SHAFT 2 (IRON): CAT DILR SET 1 (AC SALES)
         # ==========================================
         {
             "type": "shaft_2",
-            "question_text": "Looking at the server latencies chart, we see requests are bucketed: 70% of requests take 60ms, 20% take 150ms, and 10% take 800ms. What is the weighted average response latency in milliseconds? (Provide the integer answer)",
+            "question_text": "An air conditioner (AC) company has four dealers - D1, D2, D3 and D4 in a city. It sells two variants of ACs - Window and Split. Both can be Inverter or Non-inverter. 25% of total ACs sold were Window variant, and the rest were Split. Among Inverter ACs sold, 20% were Window. Known facts:\n1. Every dealer sold at least two window ACs.\n2. D1 sold 13 inverter ACs, while D3 sold 5 Non-inverter ACs.\n3. A total of 6 Window Non-inverter ACs and 36 Split Inverter ACs were sold in the city.\n4. The number of Split ACs sold by D1 was twice the number of Window ACs sold by it.\n5. D3 and D4 sold an equal number of Window ACs, which was 1/3 of the number of Window ACs sold by D2.\n6. D2 and D3 were the only ones who sold Window Non-inverter ACs. D2's count was twice D3's.\n7. D3 and D4 sold equal Split Inverters, which was half D2's.\nHow many Split Inverter ACs did D2 sell? (Provide only the integer value)",
             "answer_type": "numeric",
             "choices": None,
-            "exact_answer": "152",
-            "explanation": "Weighted average = (0.70 * 60) + (0.20 * 150) + (0.10 * 800)\n= 42 + 30 + 80 = 152 milliseconds.",
+            "exact_answer": "14",
+            "explanation": "Let total ACs = A, Window = A/4, Split = 3A/4.\nLet total Inverters = B. Window Inverter = B/5, Split Inverter = 4B/5.\nFrom Condition 3, Split Inverter = 36 -> 4B/5 = 36 -> B = 45. Thus Window Inverter = 9.\nFrom Condition 3, Window Non-inverter = 6.\nTotal Window ACs = Window Inverter (9) + Window Non-inverter (6) = 15.\nSince Window = 15, total ACs A = 60. Split ACs = 45.\nFrom Condition 6, D2 & D3 sold Window Non-inverters in 2:1 ratio, totaling 6. Thus D2 sold 4, D3 sold 2. D1 and D4 sold 0.\nUsing the remaining constraints, we solve the system of equations. Solving gives z (Split Inverters sold by D3 and D4) = 7. D2 sold 2z = 14.",
             "hints": json.dumps([
-                "Multiply the probability (percentage) of each latency bucket by its latency value.",
-                "Add the results of the three calculations together.",
-                "0.70 * 60 + 0.20 * 150 + 0.10 * 800 = ?"
+                "Find total Window ACs using the sum of Window Inverters and Window Non-inverters.",
+                "Window Non-inverters = 6 (given). B/5 + 4B/5 relationship tells us total Inverter ACs = 45, making Window Inverters = 9.",
+                "This means total Window ACs = 15, making total ACs = 60. Set up a grid for D1-D4 and solve the remaining conditions to find D2's Split Inverters = 14."
             ]),
             "gem_reward": 5,
-            "chart_data": json.dumps({
-                "type": "bar",
-                "data": {
-                    "labels": ["Fast Bucket (60ms)", "Medium Bucket (150ms)", "Slow Bucket (800ms)"],
-                    "datasets": [
-                        {
-                            "label": "Percentage of Requests (%)",
-                            "data": [70, 20, 10],
-                            "backgroundColor": ["#4AF2A1", "#FFD700", "#e0115f"]
-                        }
-                    ]
-                },
-                "options": {
-                    "responsive": True,
-                    "plugins": {
-                        "title": {
-                            "display": True,
-                            "text": "Request Latency Distribution"
-                        }
-                    }
-                }
-            })
+            "chart_data": None
         },
         {
             "type": "shaft_2",
-            "question_text": "A database table grows by 1.5 GB per week. The drive partition is 60 GB and currently holds 18 GB of data. If the system warns you once the drive is 85% full, in how many weeks from now will the warning trigger? (Provide the nearest integer number of weeks)",
+            "question_text": "Based on the air conditioner sales data (Dealers D1-D4), what percentage of the total ACs sold in the city were of the Non-Inverter type? (Provide only the integer value, e.g. 25)",
             "answer_type": "numeric",
             "choices": None,
-            "exact_answer": "22",
-            "explanation": "Drive capacity = 60 GB.\nWarning threshold (85%) = 60 * 0.85 = 51 GB.\nCurrent size = 18 GB.\nRemaining space until warning = 51 GB - 18 GB = 33 GB.\nWeekly growth = 1.5 GB.\nWeeks until warning = 33 / 1.5 = 22 weeks.",
+            "exact_answer": "25",
+            "explanation": "From the solved system: Total ACs sold in the city = 60.\nTotal Inverter ACs sold = 45 (B = 45).\nTherefore, total Non-Inverter ACs sold = 60 - 45 = 15.\nPercentage of Non-Inverter ACs = (15 / 60) * 100 = 25%.",
             "hints": json.dumps([
-                "Calculate 85% of 60 GB first. This is the storage limit for warnings.",
-                "Find how many GBs the database needs to grow to hit this threshold by subtracting current size (18 GB).",
-                "Divide the difference by 1.5 GB/week."
+                "Recall the total number of ACs sold in the city is 60.",
+                "Recall the total number of Inverter ACs sold in the city is 45.",
+                "Find the ratio of Non-Inverters (15) to total ACs (60)."
             ]),
             "gem_reward": 5,
-            "chart_data": json.dumps({
-                "type": "line",
-                "data": {
-                    "labels": ["Current", "Week 5", "Week 10", "Week 15", "Week 20", "Week 22", "Week 25"],
-                    "datasets": [
-                        {
-                            "label": "Projected DB Size (GB)",
-                            "data": [18, 25.5, 33, 40.5, 48, 51, 55.5],
-                            "borderColor": "#e0115f",
-                            "fill": False
-                        },
-                        {
-                            "label": "85% Warning Limit (GB)",
-                            "data": [51, 51, 51, 51, 51, 51, 51],
-                            "borderColor": "#800010",
-                            "borderDash": [5, 5],
-                            "fill": False
-                        }
-                    ]
-                },
-                "options": {
-                    "responsive": True,
-                    "plugins": {
-                        "title": {
-                            "display": True,
-                            "text": "Storage Growth Trend"
-                        }
-                    }
-                }
-            })
+            "chart_data": None
         },
-        
+        {
+            "type": "shaft_2",
+            "question_text": "Based on the air conditioner sales data (Dealers D1-D4), what was the total number of ACs (of all variants) sold by dealers D2 and D4 combined? (Provide only the integer value)",
+            "answer_type": "numeric",
+            "choices": None,
+            "exact_answer": "33",
+            "explanation": "By completing the matrix table for the dealers:\n- D1 total ACs = 15\n- D2 total ACs = 21\n- D3 total ACs = 12\n- D4 total ACs = 12\nTotal sold by D2 and D4 combined = 21 + 12 = 33.",
+            "hints": json.dumps([
+                "Complete the grid of sales values for each dealer.",
+                "Total ACs sold by D2 = 21. Total ACs sold by D4 = 12.",
+                "Add D2 and D4 sales values together."
+            ]),
+            "gem_reward": 5,
+            "chart_data": None
+        },
         # ==========================================
-        # SHAFT 3 (GOLD): Resource & Capacity Optimization (10 Gems)
+        # SHAFT 3 (GOLD): CAT DILR SET 2 (STUDENTS & WEIGHTS)
         # ==========================================
         {
             "type": "shaft_3",
-            "question_text": "An IT department is scheduling a code audit. 3 teams (Security, Core Dev, DevOps) must sign off. Core Dev can review 2 lines/min, Security reviews 0.5 lines/min, and DevOps reviews 1 line/min. However, Security cannot run concurrent reviews with DevOps due to workspace tool limitations, while Core Dev can run concurrently with either. What is the minimum elapsed time in minutes required to review a 1000-line codebase if you allocate the work optimally to run reviews concurrently where possible? (Write the integer answer)",
+            "question_text": "Three female students (Amala, Koli, Rini) and three male students (Biman, Mathew, Shyamal) take a course graded on a project and a test. The aggregate score is a weighted average of both components (weights positive and sum to 1). Projects are in groups of one female and one male, sharing the same project score. Facts:\n1. Minimum, maximum, and average of both project and test scores were 40, 80, and 60 respectively.\n2. Test scores were multiples of 10; 4 distinct and 2 equal to the average (60).\n3. Amala's project score was double Koli's, but Koli scored 20 more than Amala in the test. Amala had the highest aggregate.\n4. Shyamal scored second highest in the test. He scored 2 more than Koli, but 2 less than Amala in the aggregate.\n5. Biman scored second lowest in the test and lowest in the aggregate.\n6. Mathew scored more than Rini in the project, but less than her in the test.\nWhat was Rini's score in the project? (Provide only the integer value)",
             "answer_type": "numeric",
             "choices": None,
-            "exact_answer": "400",
-            "explanation": "Security cannot run reviews concurrently with DevOps. So we have two options for concurrent blocks:\nOption A: Core Dev + Security running concurrently, and DevOps running separately.\nOption B: Core Dev + DevOps running concurrently, and Security running separately.\nLet's analyze rates:\nCore Dev + Security rate = 2 + 0.5 = 2.5 lines/min.\nCore Dev + DevOps rate = 2 + 1 = 3.0 lines/min.\nSince Core Dev can run with either, to minimize total elapsed time, we should run Core Dev concurrently with DevOps (Option B) for as long as possible. If DevOps and Core Dev work concurrently, they process 3 lines/min.\nTo review 1000 lines, they can finish in 1000 / 3 = 333.3 mins. However, Security must also review the entire code. If Security reviews, it runs at 0.5 lines/min. Since Security cannot run concurrently with DevOps, Security reviews the codebase separately.\nWait, each line of code must be reviewed by ALL THREE teams. So Security must review all 1000 lines (taking 1000 / 0.5 = 2000 mins). DevOps must review all 1000 lines (taking 1000 / 1 = 1000 mins). Core Dev must review all 1000 lines (taking 1000 / 2 = 500 mins).\nLet's map out scheduling:\nTotal work for Security = 2000 dev-minutes. Since only Security can do this work, it takes 2000 minutes elapsed! Security cannot work concurrently with DevOps, but it CAN work concurrently with Core Dev. Core Dev needs 500 minutes, which easily fits within Security's 2000 minutes.\nWait! Let's re-frame the question: If the 1000 lines are split among developers to review different files (no double-auditing of the same file, just general throughput), then:\nIf it's shared work (division of labor): \nWe want to divide 1000 lines. Let X lines be audited by Core+DevOps concurrently, and Y lines by Core+Security concurrently. Since Core can work with either, and DevOps/Security cannot run together, we split the elapsed time into T1 (Core+DevOps) and T2 (Core+Security).\nLines done in T1 = (2 + 1) * T1 = 3 T1.\nLines done in T2 = (2 + 0.5) * T2 = 2.5 T2.\nTotal lines = 3 T1 + 2.5 T2 = 1000.\nElapsed time = T1 + T2. To minimize T1 + T2, we should maximize T1 because the rate (3) is higher. But DevOps can only work in T1 and Security in T2. Wait, if we want to run them, can we just run Core Dev + DevOps (rate 3) for the whole time? Then Security does nothing, but we need all lines reviewed. If the teams are separate resources auditing separate sections of the code to divide the labor, then: \nLet's look at another classic constraint puzzle: A load balancer distributes traffic to 3 servers (A, B, C) in a 5:3:2 ratio. Server C has a capacity of 120 requests/sec. What is the maximum total request throughput (requests/sec) the cluster can handle without overloading Server C?",
-            "exact_answer": "600",
-            "explanation": "The load balancer traffic ratio is A:B:C = 5:3:2.\nLet the total traffic be T requests/sec.\nTraffic routed to Server C = (2 / (5 + 3 + 2)) * T = 0.20 * T.\nServer C's maximum capacity is 120 requests/sec.\nTo avoid overloading Server C, we require:\n0.20 * T <= 120 => T <= 120 / 0.20 = 600 requests/sec.\nSo the maximum cluster throughput is 600 requests/sec.",
+            "exact_answer": "60",
+            "explanation": "Project scores must be 40, 60, and 80 (since average is 60 and min/max are 40/80).\nFrom Fact 3, Amala's project score is double Koli's, so Amala's project score = 80, and Koli's project score = 40.\nThis leaves Rini's project score = 60.",
             "hints": json.dumps([
-                "Compute the proportion of total traffic routed to Server C using the ratio 5:3:2.",
-                "Server C gets 2 parts out of 10 total parts (5+3+2). This is 20%.",
-                "If 20% of traffic is 120 requests/sec, find 100% of traffic. Solve 0.2 * T = 120."
+                "Determine the three possible project scores from the min (40), max (80), and average (60).",
+                "Look at Fact 3: Amala's project score is twice Koli's.",
+                "The only possible project scores that fit are 80 for Amala and 40 for Koli, leaving Rini's score."
             ]),
             "gem_reward": 10,
-            "chart_data": json.dumps({
-                "type": "pie",
-                "data": {
-                    "labels": ["Server A (50%)", "Server B (30%)", "Server C (20%)"],
-                    "datasets": [
-                        {
-                            "data": [50, 30, 20],
-                            "backgroundColor": ["#800010", "#FFD700", "#e0115f"]
-                        }
-                    ]
-                },
-                "options": {
-                    "responsive": True,
-                    "plugins": {
-                        "title": {
-                            "display": True,
-                            "text": "Load Balancer Distribution Ratio"
-                        }
-                    }
-                }
-            })
+            "chart_data": None
         },
         {
             "type": "shaft_3",
-            "question_text": "We need to provision AWS VMs for a batch job. We can rent Type-A instances (cost $0.20/hr, processes 50 units/hr) or Type-B instances (cost $0.50/hr, processes 150 units/hr). We have a budget of $5.00/hr. If we need to maximize processing throughput, what is the maximum number of units we can process per hour under this budget? (Provide only the integer number of units)",
+            "question_text": "Based on the student project and test score data, what was the weight of the test component in the aggregate score calculation? (Provide the decimal value, e.g. 0.6)",
             "answer_type": "numeric",
             "choices": None,
-            "exact_answer": "1500",
-            "explanation": "Type-A efficiency = 50 / $0.20 = 250 units per dollar.\nType-B efficiency = 150 / $0.50 = 300 units per dollar.\nType-B is more cost-effective. To maximize throughput, we should rent as many Type-B instances as possible.\nType-B cost is $0.50. With a $5.00 budget, we can rent exactly 10 Type-B instances (10 * $0.50 = $5.00).\n10 Type-B instances can process 10 * 150 = 1500 units/hour.\nIf we rented Type-A, we could rent 25 instances, processing 25 * 50 = 1250 units/hour. So the optimal solution is 1500.",
+            "exact_answer": "0.6",
+            "explanation": "Let weight of project = x, weight of test = 1 - x.\nFrom the constraints, the test scores are distinct multiples of 10 between 40 and 80. The sorted test scores are 40, 50, 60, 60, 70, 80.\nFrom Fact 3 and 4, we establish the aggregate equations.\nCase study yields that Test weight is 0.6 and Project weight is 0.4. This satisfies the constraint that Shyamal's aggregate is 2 less than Amala's.",
             "hints": json.dumps([
-                "Calculate the processing units per dollar for both Type-A and Type-B.",
-                "Determine which type yields more units per dollar (Type-B = 300, Type-A = 250).",
-                "Spend the entire $5.00 budget on the more efficient instance type."
+                "Let Project weight = x and Test weight = 1 - x.",
+                "Determine the distinct test scores from the constraints (40, 50, 60, 60, 70, 80).",
+                "Solve the linear equation matching Shyamal's and Amala's aggregate scores to find x."
             ]),
             "gem_reward": 10,
-            "chart_data": json.dumps({
-                "type": "bar",
-                "data": {
-                    "labels": ["Type-A ($0.20/hr)", "Type-B ($0.50/hr)"],
-                    "datasets": [
-                        {
-                            "label": "Throughput Efficiency (Units/$)",
-                            "data": [250, 300],
-                            "backgroundColor": ["#800010", "#e0115f"]
-                        }
-                    ]
-                },
-                "options": {
-                    "responsive": True,
-                    "plugins": {
-                        "title": {
-                            "display": True,
-                            "text": "Instance Cost Efficiency Comparison"
-                        }
-                    }
-                }
-            })
+            "chart_data": None
         },
-        
+        {
+            "type": "shaft_3",
+            "question_text": "Based on the student project and test score data, what was the maximum aggregate score obtained among all the students? (Provide only the integer value)",
+            "answer_type": "numeric",
+            "choices": None,
+            "exact_answer": "68",
+            "explanation": "Amala had the highest aggregate score.\nAmala's test score = 60, project score = 80.\nAggregate = (Test Score * 0.6) + (Project Score * 0.4) = (60 * 0.6) + (80 * 0.4) = 36 + 32 = 68.",
+            "hints": json.dumps([
+                "Amala scored the highest aggregate score.",
+                "Amala's project score is 80, and her test score is 60.",
+                "Apply the weights (40% project, 60% test) to calculate Amala's score."
+            ]),
+            "gem_reward": 10,
+            "chart_data": None
+        },
         # ==========================================
-        # SHAFT 4 (RUBY): Logical Deductions & Matrix Matching (15 Gems)
+        # SHAFT 4 (RUBY): CAT DILR SET 3 (ODSVILLE ELEVATION)
         # ==========================================
         {
             "type": "shaft_4",
-            "question_text": "An IT team of 4 engineers (A, B, C, D) are assigned to 4 services (Database, Frontend, API Gateway, Cache). Each engineer manages exactly one service. A does not manage the Database or the Cache. B manages either the Frontend or the API Gateway. C manages the Database. D manages the Cache. Which service does A manage?",
+            "question_text": "Odsville has five firms - Alfloo, Bzygoo, Czechy, Drjbna and Elavalaki. Each firm was founded in some year and closed down a few years later. Each raised Rs 1 crore in its first and last year. The amount raised increased every year to a max, and then decreased. No firm raised the same amount in two consecutive years. Annual changes were either +/- 1 or +/- 2 crores. Partial info:\n- Alfloo: Existed 2009-2016, Total 21 crores\n- Bzygoo: Existed 2012-2015\n- Czechy: Founded 2013, Total 9 crores\n- Drjbna: Existed 2011-2015, Total 10 crores\n- Elavalaki: Founded 2010, Total 13 crores\nWhat is the largest possible total amount of money (in Rs. crores) that could have been raised in 2013? (Provide only the integer value)",
+            "answer_type": "numeric",
+            "choices": None,
+            "exact_answer": "17",
+            "explanation": "By setting up the possible trajectory paths for each company:\n- Alfloo in 2013: Max possible is 5 crores.\n- Bzygoo in 2013: Max possible is 3 crores.\n- Czechy in 2013: It was founded in 2013, so it raised 1 crore.\n- Drjbna in 2013: From its constraints (2011-2015, total 10), its only possible trajectory is 1, 2, 4, 2, 1, so it raised 4 crores.\n- Elavalaki in 2013: Max possible is 4 crores.\nSumming these up: 5 + 3 + 1 + 4 + 4 = 17 crores.",
+            "hints": json.dumps([
+                "Determine the maximum possible amount raised by each firm individually in the year 2013.",
+                "For Czechy, 2013 is the founding year, so it must be 1. For Drjbna, the only valid sequence totaling 10 is 1, 2, 4, 2, 1, so it must be 4.",
+                "Analyze the boundaries for Alfloo (max 5), Bzygoo (max 3), and Elavalaki (max 4) in 2013 and sum them."
+            ]),
+            "gem_reward": 15,
+            "chart_data": None
+        },
+        {
+            "type": "shaft_4",
+            "question_text": "Based on the Odsville firms funding records, for which firm(s) can the annual amounts raised by them be concluded with absolute certainty in each year of their existence?",
             "answer_type": "multiple_choice",
-            "choices": json.dumps(["A) Database", "B) Frontend", "C) API Gateway", "D) Cache"]),
+            "choices": [
+                "A) Only Drjbna",
+                "B) Only Czechy",
+                "C) Only Czechy and Drjbna",
+                "D) Only Bzygoo, Czechy and Drjbna"
+            ],
             "exact_answer": "C",
-            "explanation": "We know C manages the Database, and D manages the Cache.\nThis leaves Frontend and API Gateway. \nA cannot manage Database or Cache, which is already managed by C and D anyway.\nA must manage either Frontend or API Gateway.\nB manages either Frontend or API Gateway.\nWait, A does not manage Database or Cache. If B manages Frontend, A must manage API Gateway. If B manages API Gateway, A must manage Frontend.\nLet's refine the constraints: 'B manages the Frontend'.\nIf B manages Frontend, then A must manage the API Gateway. Let's look at the multiple choice options: 'C) API Gateway' represents A's assignment.",
+            "explanation": "Analyzing the constraints:\n- Drjbna exists 2011-2015 (5 years), total 10. The only valid single-peaked sequence starts and ends at 1 and has no consecutive duplicates is 1, 2, 4, 2, 1. So it is certain.\n- Czechy total is 9, starting 2013. The only single-peaked sequence is 1, 2, 3, 2, 1 (exiting 2017). So it is certain.\n- Others have multiple possible pathways.\nHence, only Czechy and Drjbna are certain.",
             "hints": json.dumps([
-                "Set up a grid with A, B, C, D on rows and the services on columns.",
-                "Fill in the absolute truths: C = Database, D = Cache.",
-                "Since C and D take Database and Cache, A must be Frontend or API Gateway. If B takes Frontend, then A must take API Gateway."
+                "Write down the single-peaked sequence rules (start/end with 1, no adjacent duplicates, steps of +/-1 or +/-2).",
+                "Test Drjbna: 5 years, sum 10. The only sequence is 1, 2, 4, 2, 1.",
+                "Test Czechy: sum 9. The only sequence is 1, 2, 3, 2, 1. Both are uniquely determined."
             ]),
             "gem_reward": 15,
-            "chart_data": json.dumps({
-                "type": "radar",
-                "data": {
-                    "labels": ["Database", "Frontend", "API Gateway", "Cache"],
-                    "datasets": [
-                        {
-                            "label": "Engineer C Assignment Status",
-                            "data": [1, 0, 0, 0],
-                            "borderColor": "#e0115f",
-                            "fill": True
-                        },
-                        {
-                            "label": "Engineer D Assignment Status",
-                            "data": [0, 0, 0, 1],
-                            "borderColor": "#FFD700",
-                            "fill": True
-                        }
-                    ]
-                },
-                "options": {
-                    "responsive": True,
-                    "plugins": {
-                        "title": {
-                            "display": True,
-                            "text": "Assignment Grid Visualization"
-                        }
-                    }
-                }
-            })
+            "chart_data": None
         },
         {
             "type": "shaft_4",
-            "question_text": "A network pipeline consists of 4 nodes (S -> A -> B -> T) in series. A node's success rate is the probability it doesn't drop a packet. Node S and T are 100% reliable. Node A has a failure rate of 4% (success rate 96%). Node B has a failure rate of 5% (success rate 95%). What is the probability that a packet successfully traverses from S to T? (Provide a decimal value like 0.912)",
-            "answer_type": "numeric",
-            "choices": None,
-            "exact_answer": "0.912",
-            "explanation": "Since the nodes are in series, the packet succeeds if both A and B succeed.\nSuccess probability = P(A succeeds) * P(B succeeds)\n= 0.96 * 0.95 = 0.912.",
+            "question_text": "Based on the Odsville firms funding records, what best can be concluded about the total amount of money raised by all 5 companies combined in the year 2015?",
+            "answer_type": "multiple_choice",
+            "choices": [
+                "A) It is either Rs. 8 crores or Rs. 9 crores",
+                "B) It is exactly Rs. 8 crores",
+                "C) It is either Rs. 7 crores or Rs. 8 crores or Rs. 9 crores",
+                "D) It is either Rs. 7 crores or Rs. 8 crores"
+            ],
+            "exact_answer": "D",
+            "explanation": "Evaluating the year 2015 for each firm:\n- Alfloo: raised 2 crores\n- Bzygoo: raised 1 crore (last year)\n- Czechy: raised 3 crores\n- Drjbna: raised 1 crore (last year)\n- Elavalaki: could be 0 (if closed 2014) or 1 crore (if closed 2015).\nSum of first four = 2 + 1 + 3 + 1 = 7.\nWith Elavalaki, the sum is either 7 crores or 8 crores.",
             "hints": json.dumps([
-                "Calculate the success rate of Node A (100% - 4% = 96%) and Node B (100% - 5% = 95%).",
-                "Multiply the success rates together, since both events must happen sequentially (independent probabilities in series).",
-                "0.96 * 0.95 = ?"
+                "Find the exact amounts raised in 2015 by Alfloo, Bzygoo, Czechy, and Drjbna.",
+                "Check Elavalaki: its trajectory could exit in 2014 (raising 0 in 2015) or exit in 2015 (raising 1 in 2015).",
+                "Add these possibilities to get the final range."
             ]),
             "gem_reward": 15,
-            "chart_data": json.dumps({
-                "type": "line",
-                "data": {
-                    "labels": ["S", "After A (96%)", "After B (91.2%)", "T (91.2%)"],
-                    "datasets": [
-                        {
-                            "label": "Packet Survival Rate",
-                            "data": [1.0, 0.96, 0.912, 0.912],
-                            "borderColor": "#e0115f",
-                            "backgroundColor": "rgba(224, 17, 95, 0.1)",
-                            "fill": True
-                        }
-                    ]
-                },
-                "options": {
-                    "responsive": True,
-                    "plugins": {
-                        "title": {
-                            "display": True,
-                            "text": "Packet Survival Probability Along the Pipeline"
-                        }
-                    }
-                }
-            })
+            "chart_data": None
         },
-        
         # ==========================================
-        # SHAFT 5 (DIAMOND): Complex Multi-Class Financial Logic (25 Gems)
+        # SHAFT 5 (DIAMOND): CAT DILR SET 4 (RANDOM DRAW)
         # ==========================================
         {
             "type": "shaft_5",
-            "question_text": "A legacy transaction processing system has a 5% probability of crashing on any given business day. Each crash causes database corruption and support escalations, costing $6,000 to resolve. A modern replacement costs $15,000 flat to install and licenses for $50/day. The replacement reduces the daily crash probability to 0.5% (each crash still costs $6,000). What is the expected net savings (in dollars) of upgrading the system over a 100-business-day timeline? (Provide the integer dollar amount)",
+            "question_text": "Three participants - Akhil, Bimal, and Chatur participate in a random draw for five days, scoring between 1 and 9 daily. The 2-day average (except Day 1) is the average of the total scores of that day and the previous day. The 2-day averages are: Day 2: 15, Day 3: 15.5, Day 4: 16, Day 5: 17.\nRanks (1 = highest score) table:\n- Akhil: Day 1: 1, Day 2: 2, Day 3: 2, Day 4: 3, Day 5: 3\n- Bimal: Day 1: 2, Day 2: 3, Day 3: 2, Day 4: 1, Day 5: 1\n- Chatur: Day 1: 3, Day 2: 1, Day 3: 1, Day 4: 2, Day 5: 2\nFacts:\n1. Chatur always scores in multiples of 3. His Day 2 score is the unique highest in the competition. His minimum is only on Day 1, matching Akhil's score on Day 4.\n2. Total score on Day 3 equals Day 4.\n3. Bimal's scores are the same on Day 1 and Day 3.\nWhat is Akhil's score on Day 1? (Provide only the integer value)",
             "answer_type": "numeric",
             "choices": None,
-            "exact_answer": "7000",
-            "explanation": "Legacy expected daily cost = 0.05 * $6,000 = $300.\nLegacy expected total cost (100 days) = 100 * $300 = $30,000.\n\nNew system expected daily crash cost = 0.005 * $6,000 = $30.\nNew system total licensing cost (100 days) = 100 * $50 = $5,000.\nNew system setup fee = $15,000.\nNew system expected total cost (100 days) = Setup + Licensing + Crash Costs = $15,000 + $5,000 + (100 * $30) = $15,000 + $5,000 + $3,000 = $23,000.\n\nExpected net savings = Legacy Cost - New Cost = $30,000 - $23,000 = $7,000.",
+            "exact_answer": "7",
+            "explanation": "Let daily total scores be T1, T2, T3, T4, T5.\n(T1+T2)/2 = 15 -> T1+T2 = 30.\n(T2+T3)/2 = 15.5 -> T2+T3 = 31.\n(T3+T4)/2 = 16 -> T3+T4 = 32.\n(T4+T5)/2 = 17 -> T4+T5 = 34.\nFrom Fact 2, T3 = T4 -> 2 * T3 = 32 -> T3 = 16, T4 = 16. Thus T2 = 31 - 16 = 15. T1 = 30 - 15 = 15. T5 = 34 - 16 = 18.\nUsing these daily sums and rank conditions: on Day 1, Akhil (Rank 1), Bimal (Rank 2), Chatur (Rank 3) sum to 15. Chatur's score is a multiple of 3. Solving the constraints yields Akhil's score = 7, Bimal = 5, Chatur = 3.",
             "hints": json.dumps([
-                "Calculate expected daily crash costs of the legacy system ($6000 * 0.05) and multiply by 100 days.",
-                "Calculate the new system's total costs: setup cost ($15000) + daily license ($50 * 100) + expected crash cost ($6000 * 0.005 * 100).",
-                "Subtract the new system's total cost from the legacy system's total cost."
+                "Calculate the total scores for each day using the 2-day averages (T1+T2=30, T2+T3=31, T3+T4=32, T4+T5=34).",
+                "Since T3 = T4, solve for T3 = 16 and T4 = 16, which gives the daily sums: T1=15, T2=15, T3=16, T4=16, T5=18.",
+                "On Day 1, the scores sum to 15. Ranks are Akhil > Bimal > Chatur, and Chatur's score is a multiple of 3. Dedicate the scores to find Akhil = 7."
             ]),
             "gem_reward": 25,
-            "chart_data": json.dumps({
-                "type": "line",
-                "data": {
-                    "labels": ["Day 0", "Day 20", "Day 40", "Day 60", "Day 80", "Day 100"],
-                    "datasets": [
-                        {
-                            "label": "Legacy System Expected Cost ($)",
-                            "data": [0, 6000, 12000, 18000, 24000, 30000],
-                            "borderColor": "#800010",
-                            "fill": False
-                        },
-                        {
-                            "label": "New System Expected Cost ($)",
-                            "data": [15000, 16600, 18200, 19800, 21400, 23000],
-                            "borderColor": "#e0115f",
-                            "fill": False
-                        }
-                    ]
-                },
-                "options": {
-                    "responsive": True,
-                    "plugins": {
-                        "title": {
-                            "display": True,
-                            "text": "Expected Cumulative Cost: Legacy vs. Upgrade"
-                        }
-                    }
-                }
-            })
+            "chart_data": None
         },
         {
             "type": "shaft_5",
-            "question_text": "An IT department must choose between two cloud migration plans. Plan Alpha takes 4 weeks of 2 senior developers ($80/hr each, 40 hrs/wk) to execute and saves $4,000/month in cloud bills. Plan Beta takes 8 weeks of 3 developers ($80/hr each, 40 hrs/wk) to execute and saves $8,000/month. How many months from the start of the project does Plan Beta's cumulative net savings (bills saved minus dev labor costs) surpass Plan Alpha's? (Assume 4 weeks = 1 month, provide the integer number of months)",
+            "question_text": "Based on the random draw competition data (Akhil, Bimal, Chatur), what was the minimum possible total score of Bimal across all 5 days? (Provide only the integer value)",
             "answer_type": "numeric",
             "choices": None,
-            "exact_answer": "8",
-            "explanation": "Dev cost of Plan Alpha = 4 wks * 2 devs * 40 hrs/wk * $80/hr = $12,800.\nDev cost of Plan Beta = 8 wks * 3 devs * 40 hrs/wk * $80/hr = $38,400.\nMonthly savings of Plan Alpha = $4,000.\nMonthly savings of Plan Beta = $8,000.\nLet M be the number of months since start.\nFor Plan Alpha, net savings start after month 1 (4 weeks). Net savings at month M = 4,000 * (M - 1) - 12,800.\nFor Plan Beta, net savings start after month 2 (8 weeks). Net savings at month M = 8,000 * (M - 2) - 38,400.\nWe want Plan Beta net savings > Plan Alpha net savings:\n8,000(M - 2) - 38,400 > 4,000(M - 1) - 12,800\n8,000M - 16,000 - 38,400 > 4,000M - 4,000 - 12,800\n8,000M - 54,400 > 4,000M - 16,800\n4,000M > 37,600\nM > 9.4 months.\nWait! Let's check: at month 9:\nAlpha savings: month 9 is 8 months of savings. 4,000 * 8 - 12,800 = 32,000 - 12,800 = $19,200.\nBeta savings: month 9 is 7 months of savings. 8,000 * 7 - 38,400 = 56,000 - 38,400 = $17,600. (Alpha is still ahead).\nAt month 10:\nAlpha savings: 4,000 * 9 - 12,800 = 36,000 - 12,800 = $23,200.\nBeta savings: 8,000 * 8 - 38,400 = 64,000 - 38,400 = $25,600. (Beta is ahead!).\nWait! Let's re-calculate if months are counted from project start:\nIf M is months from project start:\nAt month M, Alpha has been running savings for (M - 1) months (since migration took 1 month).\nBeta has been running savings for (M - 2) months (since migration took 2 months).\nLet's check month 8:\nAlpha: 4,000 * (8 - 1) - 12,800 = 28,000 - 12,800 = $15,200.\nBeta: 8,000 * (8 - 2) - 38,400 = 48,000 - 38,400 = $9,600. (Alpha ahead).\nLet's check month 9:\nAlpha: 4,000 * 8 - 12,800 = $19,200.\nBeta: 8,000 * 7 - 38,400 = $17,600. (Alpha ahead).\nLet's check month 10:\nAlpha: $23,200.\nBeta: 8,000 * 8 - 38,400 = $25,600. (Beta ahead!).\nWait, what if M is months *after* the start of the project, but we don't subtract the build time from the savings period? No, build time is when they work, so savings only start after build is complete. So month 10 is correct. Let's make sure the exact answer matches: '10' months. Let's modify the question slightly to make the math cleaner:\nAlpha dev cost: $10,000. Savings: $3,000/month. Build time: 1 month.\nBeta dev cost: $30,000. Savings: $7,000/month. Build time: 2 months.\nAt month M:\nAlpha: 3000 * (M-1) - 10000\nBeta: 7000 * (M-2) - 30000\nLet's test M=7:\nAlpha: 3000 * 6 - 10000 = $8,000.\nBeta: 7000 * 5 - 30000 = $5,000.\nTest M=8:\nAlpha: 3000 * 7 - 10000 = $11,000.\nBeta: 7000 * 6 - 30000 = $12,000. (Beta surpasses!)\nLet's check: 7000*(M-2) - 30000 > 3000*(M-1) - 10000 => 7000M - 44000 > 3000M - 13000 => 4000M > 31000 => M > 7.75. So month 8! This is extremely clean and yields exactly 8 months. Let's adjust the question text and exact_answer accordingly.",
-            "question_text": "An IT department must choose between two cloud migration plans. Plan Alpha takes 1 month of dev labor, costing $10,000, and saves $3,000/month in cloud bills (starting month 2). Plan Beta takes 2 months of dev labor, costing $30,000, and saves $7,000/month (starting month 3). How many months from the start of the project does Plan Beta's cumulative net savings (bills saved minus dev labor costs) surpass Plan Alpha's? (Provide only the integer number of months)",
-            "exact_answer": "8",
-            "explanation": "At month M (from project start):\nPlan Alpha net savings = $3,000 * (M - 1) - $10,000.\nPlan Beta net savings = $7,000 * (M - 2) - $30,000.\n\nLet's evaluate for months 7 and 8:\nFor Month 7:\nAlpha: $3,000 * 6 - $10,000 = $8,000.\nBeta: $7,000 * 5 - $30,000 = $5,000.\n\nFor Month 8:\nAlpha: $3,000 * 7 - $10,000 = $11,000.\nBeta: $7,000 * 6 - $30,000 = $12,000.\n\nAt Month 8, Plan Beta's savings ($12,000) exceed Plan Alpha's ($11,000) for the first time.",
+            "exact_answer": "25",
+            "explanation": "Solving the full grid yields the minimum daily scores for Bimal:\n- Day 1: 5\n- Day 2: 1 or 2\n- Day 3: 5\n- Day 4: 7\n- Day 5: 7 or 8\nSumming the minimum values: 5 + 1 + 5 + 7 + 7 = 25.",
             "hints": json.dumps([
-                "Write down the net savings formula for Plan Alpha: 3000 * (M - 1) - 10000.",
-                "Write down the net savings formula for Plan Beta: 7000 * (M - 2) - 30000.",
-                "Find when Plan Beta is greater than Plan Alpha. Try plug-in values for months (like 7 and 8)."
+                "Write down Bimal's scores for each day based on the rank constraints.",
+                "Bimal's scores on Day 1 and Day 3 are both 5. On Day 4, Bimal ranks 1st in a total of 16, which requires a score of 7.",
+                "Sum Bimal's lowest possible daily scores across all five days."
             ]),
             "gem_reward": 25,
-            "chart_data": json.dumps({
-                "type": "line",
-                "data": {
-                    "labels": ["Month 0", "Month 2", "Month 4", "Month 6", "Month 7", "Month 8", "Month 10"],
-                    "datasets": [
-                        {
-                            "label": "Plan Alpha Cumulative Savings ($)",
-                            "data": [-10000, -7000, -1000, 5000, 8000, 11000, 17000],
-                            "borderColor": "#800010",
-                            "fill": False
-                        },
-                        {
-                            "label": "Plan Beta Cumulative Savings ($)",
-                            "data": [-30000, -30000, -16000, -2000, 5000, 12000, 26000],
-                            "borderColor": "#e0115f",
-                            "fill": False
-                        }
-                    ]
-                },
-                "options": {
-                    "responsive": True,
-                    "plugins": {
-                        "title": {
-                            "display": True,
-                            "text": "Migration Project ROI Break-Even"
-                        }
-                    }
-                }
-            })
+            "chart_data": None
+        },
+        {
+            "type": "shaft_5",
+            "question_text": "Based on the random draw competition data, who is definitely the participant that achieved the highest aggregate score across the five days?",
+            "answer_type": "multiple_choice",
+            "choices": [
+                "A) Akhil",
+                "B) Cannot be determined",
+                "C) Bimal",
+                "D) Chatur"
+            ],
+            "exact_answer": "D",
+            "explanation": "Let's calculate the total scores for each participant:\n- Akhil totals 23, 24, or 25.\n- Bimal totals 25, 26, or 27.\n- Chatur totals exactly 30 (Day 1: 3, Day 2: 9, Day 3: 6, Day 4: 6, Day 5: 6).\nHence, Chatur definitely has the highest aggregate score.",
+            "hints": json.dumps([
+                "Evaluate the daily scores for Chatur, who always scores in multiples of 3.",
+                "Chatur's daily scores are: Day 1: 3, Day 2: 9, Day 3: 6, Day 4: 6, Day 5: 6. Total = 30.",
+                "Compare Chatur's total (30) with the maximum possible totals for Akhil (25) and Bimal (27)."
+            ]),
+            "gem_reward": 25,
+            "chart_data": None
         }
     ]
     
     for p in puzzles_seed:
+        choices_str = json.dumps(p["choices"]) if p["choices"] else None
         cursor.execute('''
             INSERT INTO puzzles (type, date_assigned, question_text, answer_type, choices, exact_answer, explanation, hints, gem_reward, chart_data, created_at)
             VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (p["type"], p["question_text"], p["answer_type"], p["choices"], p["exact_answer"], p["explanation"], p["hints"], p["gem_reward"], p["chart_data"], now))
-
-# Data access functions
+        ''', (p["type"], p["question_text"], p["answer_type"], choices_str, p["exact_answer"], p["explanation"], p["hints"], p["gem_reward"], p["chart_data"], now))
 
 def get_user_profile():
     conn = get_db()
@@ -563,9 +385,9 @@ def get_puzzles_by_shaft(shaft_type):
                COALESCE(ups.hints_revealed, 0) as hints_revealed,
                COALESCE(ups.drillin_active, 0) as drillin_active,
                ups.user_notes, ups.attempts
-        FROM puzzles p
-        LEFT JOIN user_puzzle_status ups ON p.id = ups.puzzle_id
-        WHERE p.type = ?
+         FROM puzzles p
+         LEFT JOIN user_puzzle_status ups ON p.id = ups.puzzle_id
+         WHERE p.type = ?
     '''
     rows = conn.execute(query, (shaft_type,)).fetchall()
     conn.close()

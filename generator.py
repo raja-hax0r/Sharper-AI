@@ -50,27 +50,32 @@ def generate_puzzle(puzzle_type, date_assigned=None):
         avoid_instruction = "\nAVOID repeating or mirroring the structures of these past questions:\n" + "\n".join([f"- {q[:120]}..." for q in existing_questions])
 
     system_prompt = f"""You are the Master Builder of Pariah's Mineshaft, a cognitive gym web application.
-Your task is to generate a high-quality logical reasoning or quick business math puzzle.
+Your task is to generate a high-quality, logically rigorous logical reasoning or quantitative reasoning puzzle.
 
 CRITICAL RULES:
-1. THEME: The puzzle MUST be set in a humorous, relatable corporate IT context (e.g. software migrations, Jira tickets, micro-managing bosses, AWS server budgets, code review bottlenecks, coffee machine downtime, developer ratios, ROI presentations to leadership).
-2. INTENT: Help a 31-year-old corporate worker sharpen quick mental math and logical arguments, helping him speak numbers and money to senior leadership.
-3. MATHEMATICAL STYLE: Avoid dry, purely academic, formula-heavy math (e.g., NO pure quadratic equations, NO geometric proofs, NO trigonometry). The math should be practical, arithmetic, reasoning-based, optimization-based, or scheduling-based.
-4. SINGLE EXACT ANSWER: The question must have a single, definitive, short answer.
-   - For 'numeric' type, it must be a single clean integer or decimal (e.g., '24' or '12.5' or '15000').
+1. THEME: The puzzle MUST be set in a corporate IT context (e.g. software migrations, Jira boards, SLA compliance, AWS budgets, server path reliability, database clusters, Scrum scheduling overlaps, load balancer distribution, or team allocations).
+2. STYLE & RIGOR: Focus on CAT DILR (Data Interpretation and Logical Reasoning) style questions. Puzzles must involve:
+   - Matrix matching / Grid scheduling (assigning developers, services, or servers with overlapping rules).
+   - Network flows or routing (moving data packets, server paths, or ticket transfers under latency/capacity bounds).
+   - Statistics tables (deducing values from medians, averages, or ranges with missing data bounds).
+   - Games, tournaments, or transactions (betting logs, scores, ratings, or rank tracking).
+   - Set theory or Venn diagrams (services using combinations of languages or databases).
+   IGNORE VARC style questions. The puzzle must be solvable with 100% mathematical certainty. All parameters must be tight so there are no contradictions, ambiguities, or 50/50 guesses.
+3. SINGLE EXACT ANSWER: The question must have a single, definitive, short answer.
+   - For 'numeric' type, it must be a single clean integer or decimal (e.g., '14' or '0.6' or '45').
    - For 'multiple_choice' type, it must be the option letter ('A', 'B', 'C', or 'D').
    - For 'short_text' type, a single short word or name.
-5. VISUAL GRAPH: You MUST generate structured 'chart_data' that represents the numbers/data in the question. This chart data will be loaded directly into a Chart.js instance. Supports 'line', 'bar', 'pie', 'radar', or 'scatter' types. Make sure the labels and dataset values align perfectly with the numbers presented in your question text.
-6. HINTS: Provide 3 progressive hints. Hint 1 is a subtle guide. Hint 2 explains the logic/equation setup. Hint 3 gives the direct mathematical steps without revealing the final exact answer.
-7. FORMAT: Return ONLY a valid JSON object matching the schema below. No markdown wrappers (like ```json), no extra text.
+4. VISUAL GRAPH: Generate structured 'chart_data' ONLY if the question is based on reading data from a graph. If the question is purely logical matching or text-based scheduling, set 'chart_data' to null. Do NOT leak or highlight the final answer in the chart datasets.
+5. HINTS: Provide 3 progressive hints. Hint 1 is a subtle guide. Hint 2 explains the logic/equations setup. Hint 3 gives direct mathematical steps without revealing the final exact answer.
+6. FORMAT: Return ONLY a valid JSON object matching the schema below. No markdown wrappers (like ```json), no extra text.
 
 JSON Schema:
 {{
-    "question_text": "Detailed, engaging, funny story and question.",
+    "question_text": "Detailed story, table/matrix setup, and the question.",
     "answer_type": "numeric" | "multiple_choice" | "short_text",
     "choices": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"] or null (if numeric/text),
-    "exact_answer": "the exact string of the answer (e.g. '120' or 'C')",
-    "explanation": "Step-by-step breakdown showing the calculations and business logic.",
+    "exact_answer": "the exact string of the answer (e.g. '14' or 'C')",
+    "explanation": "Detailed step-by-step logical breakdown showing how to derive the correct answer with absolute certainty.",
     "hints": ["Hint 1", "Hint 2", "Hint 3"],
     "gem_reward": number (2 for Coal/shaft_1, 5 for Iron/shaft_2/daily, 10 for Gold/shaft_3, 15 for Ruby/shaft_4/weekly, 25 for Diamond/shaft_5),
     "chart_data": {{
@@ -80,9 +85,7 @@ JSON Schema:
             "datasets": [
                 {{
                     "label": "Dataset Title",
-                    "data": [value1, value2, ...],
-                    "borderColor": "#e0115f" (ruby red for line charts),
-                    "backgroundColor": "rgba(224, 17, 95, 0.2)" (ruby overlay)
+                    "data": [value1, value2, ...]
                 }}
             ]
         }},
@@ -95,7 +98,7 @@ JSON Schema:
                 }}
             }}
         }}
-    }}
+    }} or null
 }}
 """
 
