@@ -286,25 +286,47 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.6);
 }
 
-/* Horizontal Menu at Bottom Center */
+/* Horizontal Menu at Bottom Center - Muted White & Shadows */
 .home-menu-horizontal {
     position: absolute;
-    bottom: 1rem;
+    bottom: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
     z-index: 10;
-    background-color: rgba(13, 10, 10, 0.85); /* Solid container buffer */
-    border: 2px solid var(--border-color);
-    padding: 0.5rem 1rem;
+    background-color: rgba(0, 0, 0, 0.45); /* Very light dark opacity buffer */
+    border: 1px solid rgba(255, 255, 255, 0.15); /* Muted white border */
+    padding: 0.6rem 1.2rem;
     border-radius: 6px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
 }
 
-.home-menu-horizontal button {
+.home-menu-horizontal .pixel-btn-sm {
     white-space: nowrap;
     width: auto;
+    background-color: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.25); /* Muted white border */
+    color: rgba(255, 255, 255, 0.75); /* Muted white text */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9); /* Shadows */
+    box-shadow: none;
+    padding: 0.4rem 1rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    font-family: var(--font-retro);
+    transition: all 0.2s ease;
+}
+
+.home-menu-horizontal .pixel-btn-sm:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.75);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.home-menu-horizontal .pixel-btn-sm:active {
+    transform: translateY(1px);
 }
 
 .badge {
@@ -961,6 +983,8 @@ body {
         flex-direction: column;
         gap: 0.8rem;
         width: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .chart-container-large {
         height: 250px;
@@ -970,4 +994,36 @@ body {
         right: 5vw;
         bottom: 5rem;
     }
+}
+
+/* FULLSCREEN SCENIC HOMEPAGE LAYOUT RULES */
+body.home-active .app-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    border-bottom: none;
+    background: transparent;
+    padding: 1rem 2rem;
+}
+
+body.home-active .app-main {
+    padding: 0;
+    overflow: hidden;
+}
+
+body.home-active #view-home {
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+}
+
+body.home-active .home-panel {
+    height: 100vh;
+    width: 100vw;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
 }

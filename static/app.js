@@ -109,7 +109,7 @@ const app = {
         const musicEnabled = localStorage.getItem('bgm_enabled') !== 'false';
         localStorage.setItem('bgm_enabled', musicEnabled);
         
-        const volume = localStorage.getItem('bgm_volume') || '0.5';
+        const volume = localStorage.getItem('bgm_volume') || '0.15';
         bgm.volume = parseFloat(volume);
         el.volumeSlider.value = volume;
 
@@ -197,7 +197,12 @@ const app = {
             this.stopSolveTimer();
         }
 
-        if (viewName === 'home') el.viewHome.classList.add('active');
+        if (viewName === 'home') {
+            el.viewHome.classList.add('active');
+            document.body.classList.add('home-active');
+        } else {
+            document.body.classList.remove('home-active');
+        }
         if (viewName === 'shaft') el.viewShaft.classList.add('active');
         if (viewName === 'solve') el.viewSolve.classList.add('active');
         if (viewName === 'archive') el.viewArchive.classList.add('active');
