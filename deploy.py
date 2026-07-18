@@ -48,7 +48,7 @@ def deploy():
     for s_file in static_files:
         path = os.path.join("static", s_file)
         if os.path.exists(path):
-            run_cmd(f"scp -i {SSH_KEY} -o StrictHostKeyChecking=no {path} root@{VPS_IP}:{VPS_PATH}/static/{s_file}")
+            run_cmd(f'scp -i "{SSH_KEY}" -o StrictHostKeyChecking=no "{path}" root@{VPS_IP}:"{VPS_PATH}/static/{s_file}"')
             
     # 4. Copy .env to VPS (ensure the API key is synced)
     if os.path.exists(".env"):
