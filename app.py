@@ -118,25 +118,44 @@ def get_status():
         
         # Check if daily/weekly puzzles exist
         conn = db.get_db()
-        daily = conn.execute('SELECT id FROM puzzles WHERE type = "daily" AND date_assigned = ?', (today_str,)).fetchone()
-        weekly = conn.execute('SELECT id FROM puzzles WHERE type = "weekly" AND date_assigned = ?', (week_str,)).fetchone()
-        conn.close()
         
-        daily_id = daily['id'] if daily else None
-        weekly_id = weekly['id'] if weekly else None
+        # Daily
+        daily_row = conn.execute('SELECT id FROM puzzles WHERE type = "daily" AND date_assigned = ?', (today_str,)).fetchone()
+        if daily_row:
+            daily_id = daily_row['id']
+        else:
+            try:
+                daily_id = generator.generate_puzzle('daily', today_str)
+            except Exception as e:
+                print(f"Error generating daily puzzle: {e}")
+                fallback = conn.execute('SELECT id FROM puzzles WHERE type = "daily" ORDER BY id DESC LIMIT 1').fetchone()
+                daily_id = fallback['id'] if fallback else 1
+                
+        # Weekly
+        weekly_row = conn.execute('SELECT id FROM puzzles WHERE type = "weekly" AND date_assigned = ?', (week_str,)).fetchone()
+        if weekly_row:
+            weekly_id = weekly_row['id']
+        else:
+            try:
+                weekly_id = generator.generate_puzzle('weekly', week_str)
+            except Exception as e:
+                print(f"Error generating weekly puzzle: {e}")
+                fallback = conn.execute('SELECT id FROM puzzles WHERE type = "weekly" ORDER BY id DESC LIMIT 1').fetchone()
+                weekly_id = fallback['id'] if fallback else 2
+                
+        conn.close()
         
         daily_solved = False
         weekly_solved = False
-        if daily_id:
-            conn = db.get_db()
-            daily_status = conn.execute('SELECT status FROM user_puzzle_status WHERE puzzle_id = ? AND user_id = ?', (daily_id, user_id)).fetchone()
-            daily_solved = (daily_status and daily_status['status'] == 'solved')
-            conn.close()
-        if weekly_id:
-            conn = db.get_db()
-            weekly_status = conn.execute('SELECT status FROM user_puzzle_status WHERE puzzle_id = ? AND user_id = ?', (weekly_id, user_id)).fetchone()
-            weekly_solved = (weekly_status and weekly_status['status'] == 'solved')
-            conn.close()
+        
+        # Check user solved status
+        conn = db.get_db()
+        daily_status = conn.execute('SELECT status FROM user_puzzle_status WHERE puzzle_id = ? AND user_id = ?', (daily_id, user_id)).fetchone()
+        daily_solved = (daily_status and daily_status['status'] == 'solved')
+        
+        weekly_status = conn.execute('SELECT status FROM user_puzzle_status WHERE puzzle_id = ? AND user_id = ?', (weekly_id, user_id)).fetchone()
+        weekly_solved = (weekly_status and weekly_status['status'] == 'solved')
+        conn.close()
             
         return jsonify({
             "depth_meters": profile["depth_meters"],
